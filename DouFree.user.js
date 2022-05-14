@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DouFree
 // @namespace    https://www.douban.com/
-// @version      0.2
+// @version      0.3
 // @description  remove some douban restrictions
 // @author       Secant
 // @match        https://www.douban.com/*
@@ -139,7 +139,7 @@
   // #endregion
 
   // #region DOCUMENT-IDLE-SCRIPTS
-  window.onload = () => {
+  window.addEventListener("load", () => {
     mutationObserver.disconnect();
     [...document.querySelectorAll('a[href^="https://douc.cc/"]')].forEach(
       (a) => {
@@ -152,6 +152,6 @@
         }
       }
     );
-  };
+  });
   // #endregion
 })();
