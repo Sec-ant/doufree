@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name         DouFree
 // @namespace    https://www.douban.com/
-// @version      0.1
+// @version      0.2
 // @description  remove some douban restrictions
 // @author       Secant
-// @match        https://www.douban.com*
 // @match        https://www.douban.com/*
 // @icon         https://www.douban.com/favicon.ico
 // @grant        none
