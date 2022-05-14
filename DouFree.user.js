@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DouFree
 // @namespace    https://www.douban.com/
-// @version      0.3
+// @version      0.4
 // @description  remove some douban restrictions
 // @author       Secant
 // @match        https://www.douban.com/*
@@ -75,7 +75,7 @@
           localReshareButton.classList.add("btn");
           localReshareButton.setAttribute("data-action-type", "localReshare");
 
-          reshareButton.after("\n\n\n\n        ", localReshareButton);
+          reshareButton.after(" \u00a0\u00a0", localReshareButton);
         }
       );
       observer.disconnect();
@@ -85,6 +85,20 @@
   mutationObserver.observe(document.documentElement, {
     childList: true,
     subtree: true,
+  });
+  // #endregion
+
+  // #region FIRE-FOX-BEFORE-SCRIPT-EXECUTE
+  let mutated = false;
+  document.addEventListener("beforescriptexecute", (e) => {
+    const { src } = e.target;
+    if (/status\.js$/.test(src) && !mutated) {
+      e.preventDefault();
+      const scriptElement = document.createElement("script");
+      scriptElement.setAttribute("src", src);
+      mutated = true;
+      e.target.replaceWith(scriptElement);
+    }
   });
   // #endregion
 
