@@ -1,18 +1,25 @@
 // ==UserScript==
 // @name         DouFree
 // @namespace    https://www.douban.com/
-// @version      0.4
+// @version      0.5
 // @description  remove some douban restrictions
 // @author       Secant
 // @match        https://www.douban.com/*
+// @require      https://cdn.jsdelivr.net/gh/drrouen/NouBan-js@4e384c593d55ae6c2b002500117fa6f4f33409ed/censoredWords.js
+// @require      https://cdn.jsdelivr.net/npm/opencc-js@1.0.3/data.min.js
+// @require      https://cdn.jsdelivr.net/npm/opencc-js@1.0.3/data.t2cn.min.js
+// @require      https://cdn.jsdelivr.net/npm/opencc-js@1.0.3/bundle-browser.min.js
+// @require      https://cdn.jsdelivr.net/gh/Sec-ant/NouBan.js@b9ecd066900762c2e98c4c4d61910087d9b5887a/dist/nouban.js
+// @require      https://unpkg.com/@popperjs/core@2
+// @require      https://unpkg.com/@stitches/core/dist/index.global.js
 // @icon         https://www.douban.com/favicon.ico
 // @grant        none
 // @run-at       document-start
 // ==/UserScript==
-
+/* global NouBan, Popper, stitches */
 (function () {
   "use strict";
-
+  const { css } = stitches;
   // #region FUNCTIONS
   function isValidUrl(string) {
     let url;
@@ -29,7 +36,7 @@
   const statusScriptSource =
     "https://bafybeifiw2g6rlccgbji2aikdn5ka2ow53emczwftno46eoruijw4nxxpu.ipfs.nftstorage.link/status.js";
 
-  const mutationObserver = new MutationObserver((_, observer) => {
+  const scriptObserver = new MutationObserver((_, observer) => {
     let found = false;
 
     // statuses page
@@ -82,7 +89,71 @@
     }
   });
 
-  mutationObserver.observe(document.documentElement, {
+  scriptObserver.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
+  // #endregion
+
+  // #region INPUT-DETECTION
+  const inputSelectors = [
+    "textarea#isay-cont", // 广播
+    "input.lite-comment-reply-input", // 广播回复
+  ];
+  const toolTipStyledClass = css({
+    backgroundColor: "FireBrick",
+    color: "White",
+    padding: "5px 10px",
+    borderRadius: "4px",
+    fontSize: "13px",
+    display: "none",
+    overflowWrap: "break-word",
+    maxWidth: "160px",
+    "&.display": {
+      display: "block",
+    },
+  });
+  const wm = new WeakMap();
+  const inputObserver = new MutationObserver(() => {
+    const inputElems = [
+      ...(document.querySelectorAll(inputSelectors.join(",")) || []),
+    ];
+    for (const inputElem of inputElems) {
+      if (wm.has(inputElem)) {
+        continue;
+      }
+      const toolTipElem = document.createElement("div");
+      toolTipElem.classList.add(toolTipStyledClass());
+      document.body.append(toolTipElem);
+      Popper.createPopper(inputElem, toolTipElem, {
+        placement: "left-start",
+        modifiers: [
+          {
+            name: "offset",
+            options: {
+              offset: [0, 8],
+            },
+          },
+        ],
+      });
+      wm.set(inputElem, undefined);
+      inputElem.addEventListener("input", () => {
+        const timeout = wm.get(inputElem);
+        clearTimeout(timeout);
+        const newTimeout = setTimeout(() => {
+          const { result, list } = NouBan.censorCheck(inputElem.value);
+          if (result) {
+            toolTipElem.classList.add("display");
+            toolTipElem.innerHTML = [...list].join(" ");
+          } else {
+            toolTipElem.classList.remove("display");
+          }
+        }, 200);
+        wm.set(inputElem, newTimeout);
+      });
+    }
+  });
+  inputObserver.observe(document.documentElement, {
     childList: true,
     subtree: true,
   });
@@ -135,7 +206,6 @@
             } else {
               return xhr.responseText;
             }
-            break;
           default: {
             if (!key in xhr) return undefined;
             let value = xhr[key];
@@ -153,8 +223,8 @@
   // #endregion
 
   // #region DOCUMENT-IDLE-SCRIPTS
-  window.addEventListener("load", () => {
-    mutationObserver.disconnect();
+  document.addEventListener("DOMContentLoaded", () => {
+    scriptObserver.disconnect();
     [...document.querySelectorAll('a[href^="https://douc.cc/"]')].forEach(
       (a) => {
         const { href, title, textContent } = a;
