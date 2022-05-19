@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name         DouFree
 // @namespace    https://www.douban.com/
-// @version      0.5
+// @version      0.6
 // @description  remove some douban restrictions
 // @author       Secant
 // @match        https://www.douban.com/*
-// @require      https://cdn.jsdelivr.net/gh/drrouen/NouBan-js@4e384c593d55ae6c2b002500117fa6f4f33409ed/censoredWords.js
-// @require      https://cdn.jsdelivr.net/npm/opencc-js@1.0.3/data.min.js
-// @require      https://cdn.jsdelivr.net/npm/opencc-js@1.0.3/data.t2cn.min.js
-// @require      https://cdn.jsdelivr.net/npm/opencc-js@1.0.3/bundle-browser.min.js
-// @require      https://cdn.jsdelivr.net/gh/Sec-ant/NouBan.js@b9ecd066900762c2e98c4c4d61910087d9b5887a/dist/nouban.js
+// @require      https://fastly.jsdelivr.net/gh/drrouen/NouBan-js@4e384c593d55ae6c2b002500117fa6f4f33409ed/censoredWords.js
+// @require      https://fastly.jsdelivr.net/npm/opencc-js@1.0.3/data.min.js
+// @require      https://fastly.jsdelivr.net/npm/opencc-js@1.0.3/data.t2cn.min.js
+// @require      https://fastly.jsdelivr.net/npm/opencc-js@1.0.3/bundle-browser.min.js
+// @require      https://fastly.jsdelivr.net/gh/Sec-ant/NouBan.js@b9ecd066900762c2e98c4c4d61910087d9b5887a/dist/nouban.js
 // @require      https://unpkg.com/@popperjs/core@2
 // @require      https://unpkg.com/@stitches/core/dist/index.global.js
 // @icon         https://www.douban.com/favicon.ico
