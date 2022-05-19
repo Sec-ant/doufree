@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         DouFree
 // @namespace    https://www.douban.com/
-// @version      0.6
+// @version      0.7
+// @license      MIT; https://raw.githubusercontent.com/Sec-ant/DouFree.js/main/LICENSE
 // @description  remove some douban restrictions
 // @author       Secant
 // @match        https://www.douban.com/*
