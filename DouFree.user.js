@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DouFree
 // @namespace    https://www.douban.com/
-// @version      0.7
+// @version      0.8
 // @license      MIT; https://raw.githubusercontent.com/Sec-ant/DouFree.js/main/LICENSE
 // @description  remove some douban restrictions
 // @author       Secant
@@ -97,6 +97,7 @@
   // #endregion
 
   // #region INPUT-DETECTION
+  /* temporarily disable
   const inputSelectors = [
     "textarea#isay-cont", // 广播
     "input.lite-comment-reply-input", // 广播回复
@@ -158,6 +159,7 @@
     childList: true,
     subtree: true,
   });
+  */
   // #endregion
 
   // #region FIRE-FOX-BEFORE-SCRIPT-EXECUTE
@@ -198,7 +200,7 @@
               );
               return newXMLResponseText;
             } else if (
-              /https:\/\/www\.douban\.com\/j\/group\/check_content_clean/.test(
+              /https:\/\/www\.douban\.com\/j\/(group\/check_content_clean|check_clean_content)/.test(
                 xhr.responseURL
               )
             ) {
