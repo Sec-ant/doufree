@@ -42,6 +42,51 @@
       }
     );
   }
+  function foundInlineScripts() {
+    let found = false;
+    const scriptElements = document.querySelectorAll("script");
+    for (const scriptElement of scriptElements) {
+      const { innerHTML: scriptContent } = scriptElement;
+      const matchResult = /https.+?\/js\/sns\/lifestream\/status\.js/.exec(
+        scriptContent
+      );
+      if (matchResult === null) {
+        continue;
+      }
+      found = true;
+      break;
+    }
+    return found;
+  }
+  function foundExternalScript() {
+    const scriptElement = document.querySelector(
+      'script[src$="/js/sns/lifestream/status.js"]'
+    );
+    if (scriptElement === null) {
+      return false;
+    }
+    return true;
+  }
+  function handleMutationObserved(_, observer) {
+    const foundExternal = foundExternalScript();
+    const foundInline = foundInlineScripts();
+    let statusScriptIsFound = foundExternal || foundInline;
+    if (!statusScriptIsFound) {
+      return;
+    }
+    addLocalShareButton();
+    observer.disconnect();
+  }
+  function registerScriptObserver() {
+    const scriptObserver = new MutationObserver(handleMutationObserved);
+    scriptObserver.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+    document.addEventListener("DOMContentLoaded", () => {
+      scriptObserver.disconnect();
+    });
+  }
   function patchXMLHttpRequest() {
     const OLD_XHR = window.XMLHttpRequest;
     window.XMLHttpRequest = class extends XMLHttpRequest {
@@ -108,9 +153,9 @@
     });
   }
   function handleDOMContentLoaded() {
-    addLocalShareButton();
     expandShortUrl();
   }
+  registerScriptObserver();
   patchXMLHttpRequest();
   document.addEventListener("DOMContentLoaded", handleDOMContentLoaded);
 
