@@ -2,18 +2,15 @@ import { defineConfig } from "vite";
 import monkey from "vite-plugin-monkey";
 import { version } from "./package.json";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import { minify } from "terser";
 
 export default defineConfig({
+  publicDir: false,
   plugins: [
     viteStaticCopy({
       targets: [
         {
-          src: "src/assets/*",
+          src: "public/*",
           dest: `assets/${version}`,
-          transform: async (content) => {
-            return (await minify(content)).code;
-          },
         },
       ],
     }),
@@ -27,12 +24,12 @@ export default defineConfig({
         description: "Free you from DouBan restrictions",
         homepage: "https://github.com/Sec-ant/DouFree.js",
         icon: "https://www.douban.com/favicon.ico",
-        match: ["https://www.douban.com/*"],
+        match: ["https://www.douban.com/*", "https://cdn.jsdelivr.net/*"],
         webRequest: [
           {
             selector: "*/js/sns/lifestream/status.js",
             action: {
-              redirect: "/assets/status.js",
+              redirect: `https://cdn.jsdelivr.net/gh/Sec-ant/DouFree.js@dev/dist/assets/${version}/status.min.js`,
             },
           },
         ],

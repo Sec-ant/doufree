@@ -7,7 +7,8 @@
 // @icon         https://www.douban.com/favicon.ico
 // @homepage     https://github.com/Sec-ant/DouFree.js
 // @match        https://www.douban.com/*
-// @webRequest   {"selector":"*/js/sns/lifestream/status.js","action":{"redirect":"/assets/status.js"}}
+// @match        https://cdn.jsdelivr.net/*
+// @webRequest   {"selector":"*/js/sns/lifestream/status.js","action":{"redirect":"https://cdn.jsdelivr.net/gh/Sec-ant/DouFree.js@dev/dist/assets/0.8.1/status.min.js"}}
 // @grant        none
 // @run-at       document-start
 // ==/UserScript==
@@ -23,6 +24,23 @@
       return false;
     }
     return ["http:", "https:", "file:", "ftp:"].includes(url.protocol);
+  }
+  function addLocalShareButton() {
+    [...document.querySelectorAll("div.status-real-wrapper")].forEach(
+      (realWrapper) => {
+        var _a;
+        const reshareButton = ((_a = realWrapper.previousElementSibling) == null ? void 0 : _a.querySelector(
+          'a.btn[data-action-type="reshare"]'
+        )) ?? null;
+        if (reshareButton === null) {
+          return;
+        }
+        reshareButton.insertAdjacentHTML(
+          "afterend",
+          `   <a class="btn" data-action-type="localReshare">本级转发</a>`
+        );
+      }
+    );
   }
   function patchXMLHttpRequest() {
     const OLD_XHR = window.XMLHttpRequest;
@@ -74,7 +92,7 @@
       }
     };
   }
-  function handleDOMContentLoaded() {
+  function expandShortUrl() {
     [
       ...document.querySelectorAll(
         'a[href^="https://douc.cc/"]'
@@ -88,6 +106,10 @@
         }
       }
     });
+  }
+  function handleDOMContentLoaded() {
+    addLocalShareButton();
+    expandShortUrl();
   }
   patchXMLHttpRequest();
   document.addEventListener("DOMContentLoaded", handleDOMContentLoaded);

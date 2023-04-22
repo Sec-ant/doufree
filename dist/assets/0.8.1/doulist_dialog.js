@@ -1,1 +1,1156 @@
-var encodeHTML=function(t){return t.replace(/\&/g,"&amp;").replace(/\"/g,"&quot;").replace(/\'/g,"&apos;").replace(/\</g,"&lt;").replace(/\>/g,"&gt;")};function deferred(){var t={done:[],fail:[]},e={done:function(i){return t.done.push(i),e},fail:function(i){return t.fail.push(i),e}};return{resolve:function(){for(var e,i=0;e=t.done[i++];)e.apply(this,arguments)},reject:function(){for(var e,i=0;e=t.fail[i++];)e.apply(this,arguments)},promise:e}}function asyncRequest(t,e,i){var n=deferred(),a=null,l=(i||"get").toLowerCase();return a=$.ajax({url:t,type:l,dataType:"json",data:"post"===l?$.extend(e,{ck:get_cookie("ck")}):e,error:function(t){n.reject(t)},success:function(t){n.resolve(t)}}),n.promise.abort=function(){a&&a.abort()},n.promise}var DOULIST_ADDITEM="/j/doulist/{doulist_id}/additem",DOULIST_REMOVEITEM="/j/doulist/{doulist_id}/removeitem",DOULIST_EDITITEM="/j/doulist/{doulist_id}/edititem",DOULIST_COMMENT="/j/doulist/{doulist_id}/poke",DOULIST_CREATE="/j/doulist/add",DOULIST_LIST="/j/doulist/cat",DOULIST_SEARCH="/j/doulist/search",DOULIST_SEARCH_SELF="/j/doulist/search_user_doulists",DOULIST_GET_ITEM_INFO="/j/doulist/get_item_info",SUBJECT_DOULIST_LIST="/j/doulist/subject_doulists",validateForm=function(t,e){var i,n=!0;for(var a in e)e.hasOwnProperty(a)&&(i=t.find(a),(n=e[a](i))&&validateForm.cleanError(i));return n};function doulistCustomeEvents(t){var e=t.node.find(".bn-cancel");t.node.bind("dialog-error",(function(i,n){t.setContent('<div class="doulist-submit-success"><p>'+n+'</p>       <div class="item-submit">         <span class="bn-flat"><input type="button" value="关闭" class="bn-cancel"></span>       </div>     </div>    ').update(),e.click((function(){t.close()})),setTimeout((function(){t.close()}),3e3)})),t.node.bind("dialog-success",(function(i,n){title=n.__title||"添加成功",action=n.__action||'已经添加到<a href="'+n.url+'" target="_blank"> '+n.name+"</a>",t.setTitle(title).setContent('<div class="doulist-submit-success">       <i></i>'+action+'       <div>         <p>窗口将在<b class="num">3</b>秒后关闭</p>         <span class="bn-flat"><input type="button" value="关闭" class="bn-cancel"></span>       </div>     </div>    '),(e=t.node.find(".bn-cancel")).click((function(){t.close(),l&&clearTimeout(l)}));var a,l,s=t.node.find(".num"),d=s.text();!function(){a=a||arguments.callee,l=setTimeout((function(){s.text(--d),d?a():t.close()}),1e3)}()}))}validateForm.displayError=function(t,e){if(t){var i=t.closest(".item"),n=i.find(".form-field-error");0===n.length&&(n=$('<div class="form-field-error"></div>').prependTo(i)),n.show().html(e)}},validateForm.cleanError=function(t){t.closest(".item").find(".form-field-error").hide()};var doulistDialogForm=void 0===doulistDialogForm?{}:doulistDialogForm;doulistDialogForm.initForm=function(t){var e=t.node.find("form");e.submit((function(i){i.preventDefault();var n={subjectId:e.find("input[name=subject_id]").val(),subjectKind:e.find("input[name=subject_kind]").val(),subjectUrl:e.find("input[name=subject_url]").val(),subjectIsUrlSubject:"true"==e.find("input[name=subject_is_url_subject]").val(),comment:e.find('textarea[name="comment"]').val(),sync:e.find("#dlg-opt-share").attr("checked")?"1":""};(function(t,e,i){var n=e.find("input[name=dl_id]:checked"),a=n.val(),l=n.next().find("b").text(),s={".dl_exist_select input:checked":function(t){return!!t.length||(validateForm.displayError($(".dl_exist_select"),"请选择一个豆列"),!1)}};if(!a&&!0===window.hasCancelCollectAction){var d={__title:"取消收藏成功",__action:"已经取消了收藏"};return setTimeout((function(){e.trigger("form-submit-success",d)}),500),window.update_collect_state&&window.update_collect_state(!1),window.hasCancelCollectAction=null,e}if(validateForm(e,s)){var o={sid:i.subjectId,skind:i.subjectKind,comment:i.comment,sync_to_mb:i.sync};i.subjectIsUrlSubject&&(o.surl=i.subjectId,delete o.sid,delete o.skind),asyncRequest(DOULIST_ADDITEM.replace("{doulist_id}",a),o,"post").done((function(t){t.r?e.trigger("form-submit-error",t.err):(t.sid=i.subjectId,t.doulist_id=a,t.name=$.trim(encodeHTML(l)),window.update_collect_state&&window.update_collect_state(!0),e.trigger("form-submit-success",t))}))}return e})(0,e,n).bind("form-submit-error",(function(e,i){t.node.trigger("dialog-error",i)})).bind("form-submit-success",(function(e,i){t.node.trigger("dialog-success",i)}))})),e.bind("form-submit-fail",(function(t,i){validateForm.displayError(e.find("input[name=dl_title]"),i)})),doulistCustomeEvents(t)},function(t){var e;window.hasCancelCollectAction=null;var i=window.collect_target||{};i.limit||(i.limit=10),i.start=0;var n,a,l={tkind:i.tkind,tid:i.tid,start:0,limit:i.limit},s={start:0,limit:i.limit},d="",o="",c="",r=!1,u="",m=!1,f=!1,p='<div class="dl-item-wrap" data-category="{{category}}" data-doulist-type="{{doulist_type}}" data-is-syncing-from-note="{{is_syncing_from_note}}" data-sync-note-id="{{sync_note_id}}">  <input type="radio" value="{{id}}" id="{{id}}" name="dl_id">   <label for="{{id}}">     <span>{{count}}</span>     <b data-is-private="{{is_private}}">       <i data-id="{{id}}" data-name="{{name}}" data-is-collected="{{is_collected}}" class="cancel-collect-btn"></i>       {{name}}     </b>   </label> </div>',v='<div class="loading" style="float: none; width: auto; margin: 4px; background-position: center center;"></div>';var _={movie:"片单",tv:"片单",book:"书单"};function h(t){return t&&_[t]?_[t]:""}function g(n,a){!function(t){e&&e.close();t.picture=t.picture||"/pics/doulist_article.png";var n="1001"===t.cate?'<h3>选择书单</h3>  <input type="button" name="dl_choose" id="dl_new" autocomplete="off" class="lnk-flat" value="创建书单" />':"1002"===t.cate?'<h3>选择片单</h3>  <input type="button" name="dl_choose" id="dl_new" autocomplete="off" class="lnk-flat" value="创建片单" />':'<h3>选择豆列</h3>  <input type="button" name="dl_choose" id="dl_new" autocomplete="off" class="lnk-flat" value="创建豆列" />',a="1001"===t.cate?"输入新书单名称":"1002"===t.cate?"输入新片单名称":"输入新豆列名称",u=e=dui.Dialog({title:"1002"===t.cate?"添加到片单":"1001"===t.cate?"添加到书单":"收藏到豆列",width:640,cls:"dialog-doulist",content:("False"===t.canview?'<div class="doulist-ft" style="text-align:left;">啊，该内容你没有权限查看或已被作者删除。</div>':'<form action="" method="post">        <div class="doulist-bd">          <div class="doulist-preview">            <div><img src="{{picture}}" /></div>            <p class="item-title">{{title}}</p>          </div>          <div class="doulist-content">            <div class="item">              <div class="item-hd">                <input type="text" name="search" class="dl_search" autocomplete="off" placeholder="请输入豆列名称" maxlength="40" />                <a href="javascript: void 0;" class="clear_search">×</a>'+n+'</div>              <div class="dl-bd">                <div class="dl-item">                  <div class="dl_new_title" style="display: none;">                    <div class="dl_title_block">                       <input id="dl_title" type="text" class="basic-input dl-title" placeholder="'+a+'" maxlength="40" />                    </div>                     <div class="dl_action_block">                       <div class="dl_create_option">                        <span>隐私设置：</span>                         <input id="doulist_is_not_secret" type="radio" name="is_private" value="false" checked />                         <label for="doulist_is_not_secret">所有人可见</label>                         <input id="doulist_is_secret" type="radio" name="is_private" value="true" />                         <label for="doulist_is_secret">仅自己可见</label>                       </div>                       <input type="button" class="lnk-flat dl_new_submit" disabled value="创建" />                    </div>                   </div>                </div>                <div class="dl-loading">                  加载中...                </div>              </div>            </div>            <div class="item">              <div class="item-hd">                <h3>推荐语<span>（选填）</span></h3>              </div>              <textarea id="doulist_item_comment" class="basic-textarea" name="comment" placeholder="告诉大家你添加它的理由吧"></textarea>            </div>            <input type="hidden" name="dl_cat" value="{{cate}}">            <input type="hidden" name="subject_id" value="{{id}}">            <input type="hidden" name="subject_kind" value="{{cate}}">            <input type="hidden" name="subject_url" value="{{url}}">            <input type="hidden" name="subject_is_url_subject" value="{{isurlsubject}}">            </div>          </div>          <div class="doulist-ft">            <a target="_blank" href="http://www.douban.com/service/bookmarklet" class="lnk-bookmarklet">小工具：从浏览器直接把网页内容加入豆列</a>            <span class="bn-flat cancel_btn"><input type="button" class="j_close_dialog" value="取消"></span>            <span class="bn-flat"><input type="submit" class="doulist_submit" value="保存"></span>          </div>      </form>    ').replace(/{{[^{}]+}}/g,(function(e){return encodeHTML(t[e.replace(/[{}]/g,"")]+"").toString()}))},!0).open();u.update(),u.node.bind("dialog:close",(function(){u.node.remove()})),u.node.bind("dialog:change",(function(){u.update()})),i.tkind=t.cate,i.tid=t.id,i.start=0,l.tkind=t.cate,l.tid=t.id,l.start=0,s.start=0,d="",o="",c="",r=!1,k()}(a),n.trigger("dialog:show",e),b(a,(function(){!function(e){var i=t("#dl_new"),n=t(".dl_new_title"),a=t("#dl_title"),l=t(".dl-item-exist");t("#dl_id");i.click((function(){var s=t(".form-field-error");if(n.is(":hidden"))s.show()&&i.val("取消创建"),n.slideDown((function(){l.addClass("fold"),a.focus()}));else{var d="1001"===e.cate?"书单":"1002"===e.cate?"片单":"豆列";s.hide()&&n.hide()&&i.val("创建"+d)&&l.removeClass("fold")}})),l.bind("scroll",(s=function(i){t(this).scrollTop()+t(this).height()+30>=t(".dl_exist_select:visible").height()&&(i.preventDefault(),l.find(".search-result-list").size()>0&&""!==c?j(e,!0):b(e))},d=300,function(){var t=this,e=arguments,i=o&&!r;clearTimeout(r),r=setTimeout((function(){r=null,o||s.apply(t,e)}),d),i&&s.apply(t,e)}));var s,d,o,r}(a),function(i){var n=e,a=t(".dl_new_title"),l=t("#dl_title"),s=t(".dl_new_submit");l.bind("keyup change",(function(){t.trim(l.val()).length?s.removeAttr("disabled"):s.attr("disabled",!0)})),l.bind("keydown",(function(t){if(13===t.keyCode)return S(n,a,i),!1})),s.click((function(){S(n,a,i)}))}(a),function(e){var i=t(".dl_search"),n=t(".dl-item-exist"),a=t(".dl_new_title"),l=t("#dl_new");t(".clear_search").click((function(){i.val("").change(),k()})),i.focus((function(){if(t(this).addClass("expand"),!a.is(":hidden")){var i=t(".form-field-error"),s="1001"===e.cate?"书单":"1002"===e.cate?"片单":"豆列";i.hide()&&a.hide()&&l.val("创建"+s)&&n.removeClass("fold")}})),i.bind({compositionstart:function(){f=!0},compositionend:function(){f=!1},input:function(){setTimeout((()=>{if(!f){var n=t.trim(i.val());n.length&&u!==n?(m=!1,j(e)):0===n.length&&k()}}),100)}})}(a),function(e){t(".cancel-collect-btn").click((function(i){if(i.stopPropagation(),i.preventDefault(),confirm("确定要移除吗？")){var n=t(this).attr("data-id"),a=DOULIST_REMOVEITEM.replace("{doulist_id}",n),l=window.collect_target||{},s=t(this);l.ck=get_cookie("ck"),l.tkind=e.cate,l.tid=e.id,asyncRequest(a,l,"post").done((function(t){if(0===t.r){s.attr("data-is-collected","false"),s.closest("label").find("span").html("");var e=s.closest("label").parent();e.find('input[type="radio"]').get(0).checked=!1,e.find('input[type="radio"]').attr("disabled",!1),e.removeClass("checked_dl"),window.hasCancelCollectAction=!0}else alert("取消收藏时遇到了错误: "+t.err)}))}}))}(a),function(i){var n=e;n.node.delegate(":radio","change",(function(){var e=t(this);if(!(e.parents(".dl_create_option").size()>0)){var a=e.val(),l=DOULIST_COMMENT.replace("{doulist_id}",a);e.parent().attr("data-is-syncing-from-note")||asyncRequest(l,{sid:i.id,skind:i.cate}).done((function(t){n.node.find("form #doulist_item_comment").val(t.comment)})).fail((function(){}))}}))}(a)})),doulistDialogForm.initForm(e)}function b(t,e){"1001"===t.cate?y("book",e):"1002"===t.cate?y("movie",e):y("common",e)}function y(s,c){var u=function(){l.start>=a||"pending"===o||(o="pending",t(".dl_exist_select").append(v),asyncRequest(DOULIST_LIST,{tkind:l.tkind,tid:l.tid,start:l.start,limit:l.limit}).done((function(i){var n=p;if(0===l.start&&"common"===s)if(i.total){var d='<div class="dl_exist_select">';t(i.doulist).each((function(t,e){d+=n.replace(/{{[^{}]+}}/g,(function(t){var i=e[t.replace(/[{}]/g,"")];return i&&encodeHTML(i.toString())||""}))})),d+="</div>",t("<div />",{class:"dl-item dl-item-exist"}).insertAfter(t(".dl-item")).append(d)}else t("<div />",{class:"dl-item dl-item-exist"}).insertAfter(t(".dl-item")).append('<div class="dl_exist_select"><div class="empty-list">还未创建豆列</div></div>');else{d="";t(i.doulist).each((function(t,e){d+=n.replace(/{{[^{}]+}}/g,(function(t){var i=e[t.replace(/[{}]/g,"")];return i&&encodeHTML(i.toString())||""}))})),t(".dl_exist_select").append(d)}l.start=l.start+l.limit,a=i.total,o="success",t(".dl-item-exist .loading").remove(),w(s),e.node.find("form #doulist_item_comment").val(i.comment),l.start>=a&&t(".dl_exist_select").append('<div style="padding: 14px 0; text-align: center; color: #666;">没有更多了</div>'),"common"===s&&c&&c()})).fail((function(){t(".dl-loading").text("+_+ 加载失败，请刷新重试"),o="error",t(".dl-item-exist .loading").remove()})))};r||"common"===s?u():i.start>=n||"pending"===d||(d="pending",t(".dl_exist_select").append(v),asyncRequest(SUBJECT_DOULIST_LIST,{start:i.start+x(),limit:i.limit,tkind:i.tkind,tid:i.tid}).done((function(a){var o=p;if(0===i.start)if(a.total){var m='<div class="dl_exist_select">';t(a.doulist).each((function(t,e){m+=o.replace(/{{[^{}]+}}/g,(function(t){var i=e[t.replace(/[{}]/g,"")];return i&&encodeHTML(i.toString())||""}))})),m+="</div>",t("<div />",{class:"dl-item dl-item-exist"}).insertAfter(t(".dl-item")).append(m)}else{var f="book"===s?"书单":"movie"===s?"片单":"";t("<div />",{class:"dl-item dl-item-exist"}).insertAfter(t(".dl-item")).append('<div class="dl_exist_select"><div class="empty-list">还未创建'+f+"</div></div>")}else{m="";t(a.doulist).each((function(t,e){m+=o.replace(/{{[^{}]+}}/g,(function(t){var i=e[t.replace(/[{}]/g,"")];return i&&encodeHTML(i.toString())||""}))})),t(".dl_exist_select").append(m)}t(".dl_new_title").hide(),i.start=i.start+i.limit,n=a.total,d="success",t(".dl-item-exist .loading").remove(),w(s),e.node.find("form #doulist_item_comment").val(a.comment),c&&c(),i.start>=n&&(r=!0,0===l.start&&t(".dl_exist_select").append('<div class="test" style="font-size: 15px; padding-top: 15px; margin: 10px 0; color: #666; border-top: 1px solid #DFDFDF; ">收藏到豆列</div>'),u())})).fail((function(){t(".dl-loading").text("+_+ 加载失败，请刷新重试"),d="error",t(".dl-item-exist .loading").remove()})))}function w(i,n){var a=e;(n?a.node.find(".search-result-list .dl-item-wrap"):a.node.find(".dl_exist_select .dl-item-wrap")).each((function(e,n){var a=t(n),l=a.attr("data-category"),s=(a.attr("data-doulist-type"),a.attr("data-is-syncing-from-note")),d=a.attr("data-sync-note-id"),o=a.find(".cancel-collect-btn").attr("data-is-collected");if(s&&a.find("input").attr("disabled",!0),s&&d&&i===l){var c=o?"去移除":"去添加";a.find("span").html('<a target="_blank" href="//www.douban.com/note/'+d+'/edit">'+c+"&gt;</a>")}}))}function x(){var e=t(".dl_exist_select"),i=0;return e.find(".dl-item-wrap").each((function(e,n){t(n).hasClass("just-created")&&i++})),i}function k(){var e=t(".dl_search"),i=t(".dl-item-exist"),n=t(".clear_search");t(".no-match-warning").hide(),i.find(".dl_exist_select").show(),i.find(".search-result-list").remove(),s.start=0,null,c="",n.hide(),e.val(""),u="",currenKeyword="",m=!1}function T(){var e=t(".dl-item-exist");t(".no-match-warning").length?t(".no-match-warning").show():e.before('<p class="no-match-warning">没有找到匹配结果，可以换个关键词试试</p>')}function j(e,i){var n=null,a=t(".dl_search"),l=t(".dl-item-exist"),d=(t(".dl_new_title"),t("#dl_new"),t(".clear_search")),o=t.trim(a.val());if(n&&n.abort(),"pending"===c||m)return;t(".no-match-warning").hide(),i||l.find(".search-result-list").remove(),d.hide(),a.addClass("loading"),u=o,c="pending";const r="1001"===e.cate?"book":"1002"===e.cate?"movie":"";(n=asyncRequest(DOULIST_SEARCH_SELF,{limit:5,start:i?s.start:0,q:o,category:r})).done((function(e){a.removeClass("loading"),d.show(),c="success",i&&(s.start=s.start+s.limit),e&&e.doulists&&e.doulists.length>0?(0===t(".dl-item-exist .search-result-list").size()&&t(".dl-item-exist .dl_exist_select").hide().after('<div class="search-result-list dl_exist_select"></div>'),function(e,i){var n=p;n=n.replace(/value="{{id}}" id="{{id}}"/g,'value="{{id}}" id="search-{{id}}"').replace(/for="{{id}}"/g,'for="search-{{id}}"');var a="";t(e.doulists).each((function(t,e){a+=n.replace(/{{[^{}]+}}/g,(function(t){var i=e[t.replace(/[{}]/g,"")];return i&&encodeHTML(i.toString())||""}))})),t(".dl-item-exist .search-result-list").append(a),w(i,!0)}(e,r)):(m=!0,0===s.start?(l.find(".dl_exist_select").hide(),l.find(".search-result-list").remove(),T()):l.find(".search-result-list").append('<div style="padding: 14px 0; text-align: center; color: #666;">没有更多了</div>'))})).fail((function(){m=!0,l.find(".dl_exist_select").hide(),l.find(".search-result-list").remove(),T(),a.removeClass("loading"),d.show(),c="error"}))}function S(e,i,n){var a,l,s=t("#dl_title"),d=t("#dl_new"),o=t(".dl_exist_select"),c={"#dl_title":function(t){if(""===t.val()){var e="1001"===n.cate?"书单":"1002"===n.cate?"片单":"豆列";return validateForm.displayError(t,"请给你的"+e+"起一个名称"),!1}return!0}};if(validateForm(i,c)){var r=t(".dl_new_submit");r.attr("disabled",!0);var u=t.trim(t("#dl_title").val()),m="1001"===n.cate?"book":"1002"===n.cate?"movie":"",f=h(m)+"｜";m&&(a=u,l=m,!["｜","丨","|"].some((t=>new RegExp("^"+h(l)+"\\"+t).test(a))))&&(u=f+u);var p={title:u,is_private:t('input[name="is_private"]:checked').val()};"1001"!==n.cate&&"1002"!==n.cate||(p.category="1001"===n.cate?"book":"movie"),asyncRequest(DOULIST_CREATE,p,"post").done((function(e){if(e.r)alert(e.err);else{e.doulist_id=e.id;var i='<div class="just-created dl-item-wrap"><input type="radio" value="{{id}}" id="{{id}}" name="dl_id" checked="checked"><label for="{{id}}"><b data-is-private="{{is_private}}">{{name}}</b></label></div>'.replace(/{{[^{}]+}}/g,(function(t){var i=e[t.replace(/[{}]/g,"")];return i&&encodeHTML(i.toString())||""}));t(i).prependTo(o),o.find(".empty-list").remove(),o.animate({scrollTop:0},100),d.click(),s.val("").change()}})).fail((function(){alert("网络问题，请稍后重试"),r.removeAttr("disabled")}))}else e.update();return i}t.fn.doulistDialog=function(e){return new g(t(this),e)}}(jQuery);
+var encodeHTML = function (s) {
+  return s
+    .replace(/\&/g, "&amp;")
+    .replace(/\"/g, "&quot;")
+    .replace(/\'/g, "&apos;")
+    .replace(/\</g, "&lt;")
+    .replace(/\>/g, "&gt;");
+};
+
+function deferred() {
+  var callbacks = {
+    done: [],
+    fail: [],
+  };
+
+  var promise = {
+    done: function (callback) {
+      callbacks.done.push(callback);
+      return promise;
+    },
+
+    fail: function (callback) {
+      callbacks.fail.push(callback);
+      return promise;
+    },
+  };
+
+  return {
+    resolve: function () {
+      var i = 0,
+        cb;
+      for (; (cb = callbacks["done"][i++]); ) {
+        cb.apply(this, arguments);
+      }
+    },
+
+    reject: function () {
+      var i = 0,
+        cb;
+      for (; (cb = callbacks["fail"][i++]); ) {
+        cb.apply(this, arguments);
+      }
+    },
+
+    promise: promise,
+  };
+}
+function asyncRequest(url, params, method) {
+  var defer = deferred();
+  var xhr = null;
+  var t = (method || "get").toLowerCase();
+  xhr = $.ajax({
+    url: url,
+    type: t,
+    dataType: "json",
+    data: t === "post" ? $.extend(params, { ck: get_cookie("ck") }) : params,
+    error: function (e) {
+      defer.reject(e);
+    },
+    success: function (e) {
+      defer.resolve(e);
+    },
+  });
+
+  defer.promise.abort = function () {
+    xhr && xhr.abort();
+  };
+  return defer.promise;
+}
+var DOULIST_ADDITEM = "/j/doulist/{doulist_id}/additem";
+var DOULIST_REMOVEITEM = "/j/doulist/{doulist_id}/removeitem";
+var DOULIST_EDITITEM = "/j/doulist/{doulist_id}/edititem";
+var DOULIST_COMMENT = "/j/doulist/{doulist_id}/poke";
+var DOULIST_CREATE = "/j/doulist/add";
+var DOULIST_LIST = "/j/doulist/cat";
+var DOULIST_SEARCH = "/j/doulist/search";
+var DOULIST_SEARCH_SELF = "/j/doulist/search_user_doulists";
+var DOULIST_GET_ITEM_INFO = "/j/doulist/get_item_info";
+var SUBJECT_DOULIST_LIST = "/j/doulist/subject_doulists"; // 片单|书单
+var validateForm = function (frm, rules) {
+  var bool = true;
+  var inp;
+  for (var n in rules) {
+    if (rules.hasOwnProperty(n)) {
+      inp = frm.find(n);
+      bool = rules[n](inp);
+      if (bool) {
+        validateForm.cleanError(inp);
+      }
+    }
+  }
+  return bool;
+};
+
+validateForm.displayError = function (inp, error) {
+  if (!inp) {
+    return;
+  }
+  var item = inp.closest(".item");
+  var errorNode = item.find(".form-field-error");
+  if (errorNode.length === 0) {
+    errorNode = $('<div class="form-field-error"></div>').prependTo(item);
+  }
+  errorNode.show().html(error);
+};
+
+validateForm.cleanError = function (inp) {
+  inp.closest(".item").find(".form-field-error").hide();
+};
+
+function doulistCustomeEvents(dialog) {
+  var cancelBtn = dialog.node.find(".bn-cancel");
+  dialog.node.bind("dialog-error", function (e, error) {
+    dialog
+      .setContent(
+        '<div class="doulist-submit-success"><p>' +
+          error +
+          '</p>\
+       <div class="item-submit">\
+         <span class="bn-flat"><input type="button" value="关闭" class="bn-cancel"></span>\
+       </div>\
+     </div>\
+    '
+      )
+      .update();
+    cancelBtn.click(function () {
+      dialog.close();
+    });
+    setTimeout(function () {
+      dialog.close();
+    }, 3000);
+  });
+
+  dialog.node.bind("dialog-success", function (e, doulist) {
+    title = doulist.__title || "添加成功";
+    action =
+      doulist.__action ||
+      '已经添加到<a href="' +
+        doulist.url +
+        '" target="_blank"> ' +
+        doulist.name +
+        "</a>";
+    dialog.setTitle(title).setContent(
+      '<div class="doulist-submit-success">\
+       <i></i>' +
+        action +
+        '\
+       <div>\
+         <p>窗口将在<b class="num">3</b>秒后关闭</p>\
+         <span class="bn-flat"><input type="button" value="关闭" class="bn-cancel"></span>\
+       </div>\
+     </div>\
+    '
+    );
+    cancelBtn = dialog.node.find(".bn-cancel");
+    cancelBtn.click(function () {
+      dialog.close();
+      timer && clearTimeout(timer);
+    });
+    var num = dialog.node.find(".num"),
+      count = num.text(),
+      countdown,
+      timer;
+    (function () {
+      countdown = countdown || arguments.callee;
+      timer = setTimeout(function () {
+        num.text(--count);
+        count ? countdown() : dialog.close();
+      }, 1000);
+    })();
+  });
+}
+var doulistDialogForm =
+  typeof doulistDialogForm === "undefined" ? {} : doulistDialogForm;
+
+(function () {
+  var initForm = function (dialog) {
+    var frm = dialog.node.find("form");
+
+    frm.submit(function (e) {
+      e.preventDefault();
+      var frmData = {
+        subjectId: frm.find("input[name=subject_id]").val(),
+        subjectKind: frm.find("input[name=subject_kind]").val(),
+        subjectUrl: frm.find("input[name=subject_url]").val(),
+        subjectIsUrlSubject:
+          frm.find("input[name=subject_is_url_subject]").val() == "true",
+        comment: frm.find('textarea[name="comment"]').val(),
+        sync: frm.find("#dlg-opt-share").attr("checked") ? "1" : "",
+      };
+      existListHandler(dialog, frm, frmData)
+        .bind("form-submit-error", function (e, error) {
+          dialog.node.trigger("dialog-error", error);
+        })
+        .bind("form-submit-success", function (e, doulist) {
+          dialog.node.trigger("dialog-success", doulist);
+        });
+    });
+    frm.bind("form-submit-fail", function (e, msg) {
+      validateForm.displayError(frm.find("input[name=dl_title]"), msg);
+    });
+    doulistCustomeEvents(dialog);
+  };
+
+  function existListHandler(dialog, frm, frmData) {
+    var doulistSelect = frm.find("input[name=dl_id]:checked");
+    var doulistId = doulistSelect.val();
+    var doulistName = doulistSelect.next().find("b").text();
+    var validateRules = {
+      ".dl_exist_select input:checked": function (e) {
+        if (!e.length) {
+          validateForm.displayError($(".dl_exist_select"), "请选择一个豆列");
+          return false;
+        }
+        return true;
+      },
+    };
+    if (!doulistId && window.hasCancelCollectAction === true) {
+      var obj = {
+        __title: "取消收藏成功",
+        __action: "已经取消了收藏",
+      };
+      setTimeout(function () {
+        frm.trigger("form-submit-success", obj);
+      }, 500);
+      window.update_collect_state && window.update_collect_state(false);
+      window.hasCancelCollectAction = null;
+      return frm;
+    }
+    if (validateForm(frm, validateRules)) {
+      var data = {
+        /* local-dev
+      // sid: '25839662', // movie
+      // sid: '24879016', // book
+      */
+        sid: frmData.subjectId,
+        skind: frmData.subjectKind,
+        comment: frmData.comment,
+        sync_to_mb: frmData.sync,
+      };
+      if (frmData.subjectIsUrlSubject) {
+        data.surl = frmData.subjectId;
+        delete data.sid;
+        delete data.skind;
+      }
+      asyncRequest(
+        DOULIST_ADDITEM.replace("{doulist_id}", doulistId),
+        data,
+        "post"
+      ).done(function (res) {
+        if (res.r) {
+          frm.trigger("form-submit-error", res.err);
+          return;
+        }
+
+        res.sid = frmData.subjectId;
+        res.doulist_id = doulistId;
+        res.name = $.trim(encodeHTML(doulistName));
+
+        window.update_collect_state && window.update_collect_state(true);
+        frm.trigger("form-submit-success", res);
+      });
+    }
+    return frm;
+  }
+
+  doulistDialogForm.initForm = initForm;
+})();
+// ref: docs/widgets/doulist_btn.html
+
+(function ($) {
+  var current_doulist_dialog;
+
+  window.hasCancelCollectAction = null;
+
+  var params = window.collect_target || {};
+  if (!params.limit) {
+    params.limit = 10;
+  }
+  params.start = 0;
+
+  /* local-dev */
+  // params.tkind = '1001'
+  // params.tid = '33387422'
+
+  var pureDoulistParams = {
+    tkind: params.tkind,
+    tid: params.tid,
+    start: 0,
+    limit: params.limit,
+  };
+
+  var searchParams = {
+    start: 0,
+    limit: params.limit,
+  };
+
+  var total;
+  var pureDoulistTotal;
+  var searchDoulistTotal;
+  var status = "";
+  var pureDoulistStatus = "";
+  var searchDoulistStatus = "";
+  var allSubjectDoulsitLoaded = false;
+  var searchKeyword = "";
+  var noMoreSearchResult = false;
+  var inputLock = false;
+
+  var DOULIST_ITEM_TMPL =
+    '\
+<div class="dl-item-wrap"\
+ data-category="{{category}}"\
+ data-doulist-type="{{doulist_type}}"\
+ data-is-syncing-from-note="{{is_syncing_from_note}}"\
+ data-sync-note-id="{{sync_note_id}}">\
+  <input type="radio" value="{{id}}" id="{{id}}" name="dl_id"> \
+  <label for="{{id}}"> \
+    <span>{{count}}</span> \
+    <b data-is-private="{{is_private}}"> \
+      <i data-id="{{id}}" data-name="{{name}}" data-is-collected="{{is_collected}}" class="cancel-collect-btn"></i> \
+      {{name}} \
+    </b> \
+  </label> \
+</div>';
+  var loader =
+    '<div class="loading" style="float: none; width: auto; margin: 4px; background-position: center center;"></div>';
+
+  function debounce(func, wait, immediate) {
+    var timeout;
+    return function () {
+      var context = this,
+        args = arguments;
+      var later = function () {
+        timeout = null;
+        if (!immediate) func.apply(context, args);
+      };
+      var callNow = immediate && !timeout;
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+      if (callNow) func.apply(context, args);
+    };
+  }
+
+  var DOULIST_CATEGORY_TEXT = {
+    movie: "片单",
+    tv: "片单",
+    book: "书单",
+  };
+
+  function getDigestTypeText(type) {
+    var text =
+      type && DOULIST_CATEGORY_TEXT[type] ? DOULIST_CATEGORY_TEXT[type] : "";
+    return text;
+  }
+
+  function isStartsWithPrefixWord(str, type) {
+    var separator = ["｜", "丨", "|"]; // 三种不同类型的分隔符
+    return separator.some((sep) => {
+      var reg = new RegExp("^" + getDigestTypeText(type) + "\\" + sep);
+      return reg.test(str);
+    });
+  }
+
+  function DoulistDialog(node, config) {
+    showDoulistDialog(config);
+    node.trigger("dialog:show", current_doulist_dialog);
+
+    getAllDoulist(config, function () {
+      handleDoulist(config);
+      handleNewDoulist(config);
+      handleDoulistSearch(config);
+      handleCancelCollect(config);
+      handleSelectDoulist(config);
+    });
+    doulistDialogForm.initForm(current_doulist_dialog);
+  }
+
+  function showDoulistDialog(config) {
+    if (current_doulist_dialog) {
+      current_doulist_dialog.close();
+    }
+    config.picture = config.picture || "/pics/doulist_article.png";
+
+    /* local-dev */
+    // config.cate = '1001'
+
+    var header =
+      config.cate === "1001"
+        ? '<h3>选择书单</h3>\
+  <input type="button" name="dl_choose" id="dl_new" autocomplete="off" class="lnk-flat" value="创建书单" />'
+        : config.cate === "1002"
+        ? '<h3>选择片单</h3>\
+  <input type="button" name="dl_choose" id="dl_new" autocomplete="off" class="lnk-flat" value="创建片单" />'
+        : '<h3>选择豆列</h3>\
+  <input type="button" name="dl_choose" id="dl_new" autocomplete="off" class="lnk-flat" value="创建豆列" />';
+    var title =
+      config.cate === "1001"
+        ? "输入新书单名称"
+        : config.cate === "1002"
+        ? "输入新片单名称"
+        : "输入新豆列名称";
+
+    var dialog = (current_doulist_dialog = dui
+      .Dialog(
+        {
+          title:
+            config.cate === "1002"
+              ? "添加到片单"
+              : config.cate === "1001"
+              ? "添加到书单"
+              : "收藏到豆列",
+          width: 640,
+          cls: "dialog-doulist",
+          content: (config.canview === "False"
+            ? '<div class="doulist-ft" style="text-align:left;">啊，该内容你没有权限查看或已被作者删除。</div>'
+            : '<form action="" method="post">\
+        <div class="doulist-bd">\
+          <div class="doulist-preview">\
+            <div><img src="{{picture}}" /></div>\
+            <p class="item-title">{{title}}</p>\
+          </div>\
+          <div class="doulist-content">\
+            <div class="item">\
+              <div class="item-hd">\
+                <input type="text" name="search" class="dl_search" autocomplete="off" placeholder="请输入豆列名称" maxlength="40" />\
+                <a href="javascript: void 0;" class="clear_search">×</a>' +
+              header +
+              '</div>\
+              <div class="dl-bd">\
+                <div class="dl-item">\
+                  <div class="dl_new_title" style="display: none;">\
+                    <div class="dl_title_block"> \
+                      <input id="dl_title" type="text" class="basic-input dl-title" placeholder="' +
+              title +
+              '" maxlength="40" />\
+                    </div> \
+                    <div class="dl_action_block"> \
+                      <div class="dl_create_option">\
+                        <span>隐私设置：</span> \
+                        <input id="doulist_is_not_secret" type="radio" name="is_private" value="false" checked /> \
+                        <label for="doulist_is_not_secret">所有人可见</label> \
+                        <input id="doulist_is_secret" type="radio" name="is_private" value="true" /> \
+                        <label for="doulist_is_secret">仅自己可见</label> \
+                      </div> \
+                      <input type="button" class="lnk-flat dl_new_submit" disabled value="创建" />\
+                    </div> \
+                  </div>\
+                </div>\
+                <div class="dl-loading">\
+                  加载中...\
+                </div>\
+              </div>\
+            </div>\
+            <div class="item">\
+              <div class="item-hd">\
+                <h3>推荐语<span>（选填）</span></h3>\
+              </div>\
+              <textarea id="doulist_item_comment" class="basic-textarea" name="comment" placeholder="告诉大家你添加它的理由吧"></textarea>\
+            </div>\
+            <input type="hidden" name="dl_cat" value="{{cate}}">\
+            <input type="hidden" name="subject_id" value="{{id}}">\
+            <input type="hidden" name="subject_kind" value="{{cate}}">\
+            <input type="hidden" name="subject_url" value="{{url}}">\
+            <input type="hidden" name="subject_is_url_subject" value="{{isurlsubject}}">\
+            </div>\
+          </div>\
+          <div class="doulist-ft">\
+            <a target="_blank" href="http://www.douban.com/service/bookmarklet" class="lnk-bookmarklet">小工具：从浏览器直接把网页内容加入豆列</a>\
+            <span class="bn-flat cancel_btn"><input type="button" class="j_close_dialog" value="取消"></span>\
+            <span class="bn-flat"><input type="submit" class="doulist_submit" value="保存"></span>\
+          </div>\
+      </form>\
+    '
+          ).replace(/{{[^{}]+}}/g, function (match) {
+            return encodeHTML(
+              config[match.replace(/[{}]/g, "")] + ""
+            ).toString();
+          }),
+        },
+        true
+      )
+      .open());
+
+    dialog.update();
+
+    dialog.node.bind("dialog:close", function () {
+      dialog.node.remove();
+    });
+
+    dialog.node.bind("dialog:change", function () {
+      dialog.update();
+    });
+
+    // 重置一下各项参数
+    params.tkind = config.cate;
+    params.tid = config.id;
+    params.start = 0;
+    pureDoulistParams.tkind = config.cate;
+    pureDoulistParams.tid = config.id;
+    pureDoulistParams.start = 0;
+    searchParams.start = 0;
+
+    status = "";
+    pureDoulistStatus = "";
+    searchDoulistStatus = "";
+    allSubjectDoulsitLoaded = false;
+
+    clearSearch();
+  }
+
+  // 获取包含书单、片单的全部豆列
+  function getAllDoulist(config, callback) {
+    if (config.cate === "1001") {
+      getMixedDoulist("book", callback);
+    } else if (config.cate === "1002") {
+      getMixedDoulist("movie", callback);
+    } else {
+      getMixedDoulist("common", callback);
+    }
+  }
+
+  // 获取已有的片单/书单
+  function getMixedDoulist(category, callback) {
+    var appendPureDoulists = function () {
+      if (
+        pureDoulistParams.start >= pureDoulistTotal ||
+        pureDoulistStatus === "pending"
+      ) {
+        return;
+      }
+
+      pureDoulistStatus = "pending";
+      $(".dl_exist_select").append(loader);
+      asyncRequest(DOULIST_LIST, {
+        tkind: pureDoulistParams.tkind,
+        tid: pureDoulistParams.tid,
+        start: pureDoulistParams.start,
+        limit: pureDoulistParams.limit,
+      })
+        .done(function (pureDoulistResp) {
+          var DL_TMPL = DOULIST_ITEM_TMPL;
+
+          // 直接请求纯豆列，并且是第一次加载的时候
+          if (pureDoulistParams.start === 0 && category === "common") {
+            if (pureDoulistResp.total) {
+              var DL_STR = '<div class="dl_exist_select">';
+              $(pureDoulistResp.doulist).each(function (i, dl) {
+                DL_STR += DL_TMPL.replace(/{{[^{}]+}}/g, function (match) {
+                  var matched = dl[match.replace(/[{}]/g, "")];
+                  return (matched && encodeHTML(matched.toString())) || "";
+                });
+              });
+              DL_STR += "</div>";
+              $("<div />", { class: "dl-item dl-item-exist" })
+                .insertAfter($(".dl-item"))
+                .append(DL_STR);
+            } else {
+              $("<div />", { class: "dl-item dl-item-exist" })
+                .insertAfter($(".dl-item"))
+                .append(
+                  '<div class="dl_exist_select"><div class="empty-list">还未创建豆列</div></div>'
+                );
+            }
+          } else {
+            var DL_STR = "";
+            $(pureDoulistResp.doulist).each(function (i, dl) {
+              DL_STR += DL_TMPL.replace(/{{[^{}]+}}/g, function (match) {
+                var matched = dl[match.replace(/[{}]/g, "")];
+                return (matched && encodeHTML(matched.toString())) || "";
+              });
+            });
+            $(".dl_exist_select").append(DL_STR);
+          }
+
+          pureDoulistParams.start =
+            pureDoulistParams.start + pureDoulistParams.limit;
+          pureDoulistTotal = pureDoulistResp.total;
+          pureDoulistStatus = "success";
+
+          $(".dl-item-exist .loading").remove();
+
+          settleDoulistItemStatus(category);
+
+          var dialog = current_doulist_dialog;
+          dialog.node
+            .find("form #doulist_item_comment")
+            .val(pureDoulistResp.comment);
+
+          if (pureDoulistParams.start >= pureDoulistTotal) {
+            $(".dl_exist_select").append(
+              '<div style="padding: 14px 0; text-align: center; color: #666;">没有更多了</div>'
+            );
+          }
+
+          if (category === "common") {
+            callback && callback();
+          }
+        })
+        .fail(function () {
+          $(".dl-loading").text("+_+ 加载失败，请刷新重试");
+          pureDoulistStatus = "error";
+          $(".dl-item-exist .loading").remove();
+        });
+    };
+
+    if (allSubjectDoulsitLoaded || category === "common") {
+      appendPureDoulists();
+      return;
+    }
+
+    if (params.start >= total || status === "pending") {
+      return;
+    }
+
+    status = "pending";
+    $(".dl_exist_select").append(loader);
+
+    asyncRequest(SUBJECT_DOULIST_LIST, {
+      start: params.start + getJustCreatedNewListsCount(),
+      limit: params.limit,
+      tkind: params.tkind,
+      tid: params.tid,
+    })
+      .done(function (resp) {
+        var DL_TMPL = DOULIST_ITEM_TMPL;
+
+        // 第一次加载的时候
+        if (params.start === 0) {
+          if (resp.total) {
+            var DL_STR = '<div class="dl_exist_select">';
+            $(resp.doulist).each(function (i, dl) {
+              DL_STR += DL_TMPL.replace(/{{[^{}]+}}/g, function (match) {
+                var matched = dl[match.replace(/[{}]/g, "")];
+                return (matched && encodeHTML(matched.toString())) || "";
+              });
+            });
+            DL_STR += "</div>";
+
+            $("<div />", { class: "dl-item dl-item-exist" })
+              .insertAfter($(".dl-item"))
+              .append(DL_STR);
+          } else {
+            var typeStr =
+              category === "book" ? "书单" : category === "movie" ? "片单" : "";
+            $("<div />", { class: "dl-item dl-item-exist" })
+              .insertAfter($(".dl-item"))
+              .append(
+                '<div class="dl_exist_select"><div class="empty-list">还未创建' +
+                  typeStr +
+                  "</div></div>"
+              );
+          }
+        } else {
+          var DL_STR = "";
+          $(resp.doulist).each(function (i, dl) {
+            DL_STR += DL_TMPL.replace(/{{[^{}]+}}/g, function (match) {
+              var matched = dl[match.replace(/[{}]/g, "")];
+              return (matched && encodeHTML(matched.toString())) || "";
+            });
+          });
+
+          $(".dl_exist_select").append(DL_STR);
+        }
+
+        $(".dl_new_title").hide();
+
+        params.start = params.start + params.limit;
+        total = resp.total;
+        status = "success";
+
+        $(".dl-item-exist .loading").remove();
+
+        settleDoulistItemStatus(category);
+
+        var dialog = current_doulist_dialog;
+        dialog.node.find("form #doulist_item_comment").val(resp.comment);
+
+        callback && callback();
+
+        // 拿到全部的片单/书单后，再去获取纯豆列
+        if (params.start >= total) {
+          allSubjectDoulsitLoaded = true;
+
+          if (pureDoulistParams.start === 0) {
+            $(".dl_exist_select").append(
+              '<div class="test" style="font-size: 15px; padding-top: 15px; margin: 10px 0; color: #666; border-top: 1px solid #DFDFDF; ">收藏到豆列</div>'
+            );
+          }
+
+          appendPureDoulists();
+        }
+      })
+      .fail(function () {
+        $(".dl-loading").text("+_+ 加载失败，请刷新重试");
+        status = "error";
+        $(".dl-item-exist .loading").remove();
+      });
+  }
+
+  // 针对列表里单个豆列做修改
+  function settleDoulistItemStatus(targetCategory, isSearch) {
+    var dialog = current_doulist_dialog;
+    var $items = isSearch
+      ? dialog.node.find(".search-result-list .dl-item-wrap")
+      : dialog.node.find(".dl_exist_select .dl-item-wrap");
+
+    $items.each(function (e, doulist) {
+      var $d = $(doulist);
+      var doulist_category = $d.attr("data-category");
+      var doulist_type = $d.attr("data-doulist-type");
+      var is_syncing_from_note = $d.attr("data-is-syncing-from-note");
+      var sync_note_id = $d.attr("data-sync-note-id");
+      var is_collected = $d
+        .find(".cancel-collect-btn")
+        .attr("data-is-collected");
+
+      // 如果已经收藏过了，不能再选择
+      // if (is_collected) {
+      // $d.find('input').attr('disabled', true)
+      // }
+
+      // 不能直接添加到条目豆列
+      if (is_syncing_from_note) {
+        $d.find("input").attr("disabled", true);
+      }
+
+      if (
+        is_syncing_from_note &&
+        sync_note_id &&
+        targetCategory === doulist_category
+      ) {
+        var act = is_collected ? "去移除" : "去添加";
+        $d.find("span").html(
+          '<a target="_blank" href="//www.douban.com/note/' +
+            sync_note_id +
+            '/edit">' +
+            act +
+            "&gt;</a>"
+        );
+      }
+    });
+  }
+
+  // 获取通过弹窗新建的列表数量，用来在滚动加载时重新计算 start 值
+  function getJustCreatedNewListsCount() {
+    var dialog = current_doulist_dialog;
+    var dl_exist = $(".dl_exist_select");
+    var count = 0;
+    dl_exist.find(".dl-item-wrap").each(function (i, item) {
+      if ($(item).hasClass("just-created")) {
+        count++;
+      }
+    });
+    return count;
+  }
+
+  function handleCancelCollect(config) {
+    var $cancelBtn = $(".cancel-collect-btn");
+    $cancelBtn.click(function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      if (!confirm("确定要移除吗？")) return;
+
+      var did = $(this).attr("data-id");
+      var url = DOULIST_REMOVEITEM.replace("{doulist_id}", did);
+      var param = window.collect_target || {};
+      var $btn = $(this);
+      param.ck = get_cookie("ck");
+      param.tkind = config.cate;
+      param.tid = config.id;
+      asyncRequest(url, param, "post").done(function (res) {
+        if (res.r === 0) {
+          $btn.attr("data-is-collected", "false");
+          $btn.closest("label").find("span").html("");
+          var $root = $btn.closest("label").parent();
+          $root.find('input[type="radio"]').get(0).checked = false;
+          $root.find('input[type="radio"]').attr("disabled", false);
+          $root.removeClass("checked_dl");
+          window.hasCancelCollectAction = true;
+        } else {
+          alert("取消收藏时遇到了错误: " + res.err);
+        }
+      });
+    });
+  }
+
+  function handleDoulist(config) {
+    var dialog = current_doulist_dialog;
+    var dl_new = $("#dl_new");
+    var dl_new_title = $(".dl_new_title");
+    var dl_title = $("#dl_title");
+    var dl_exist = $(".dl-item-exist");
+    var dl_id = $("#dl_id");
+
+    dl_new.click(function () {
+      var form_error = $(".form-field-error");
+      if (dl_new_title.is(":hidden")) {
+        form_error.show() && dl_new.val("取消创建");
+        dl_new_title.slideDown(function () {
+          dl_exist.addClass("fold");
+          dl_title.focus();
+        });
+      } else {
+        var typeStr =
+          config.cate === "1001"
+            ? "书单"
+            : config.cate === "1002"
+            ? "片单"
+            : "豆列";
+        form_error.hide() &&
+          dl_new_title.hide() &&
+          dl_new.val("创建" + typeStr) &&
+          dl_exist.removeClass("fold");
+      }
+    });
+
+    // 滚动加载
+    // stop page scrolling
+    dl_exist.bind(
+      "scroll",
+      debounce(function (e) {
+        var scrollTop = $(this).scrollTop();
+        var scrollHeight = $(this).height();
+        var windowHeight = $(".dl_exist_select:visible").height();
+
+        if (scrollTop + scrollHeight + 30 >= windowHeight) {
+          e.preventDefault();
+          if (
+            dl_exist.find(".search-result-list").size() > 0 &&
+            searchDoulistStatus !== ""
+          ) {
+            searchDoulist(config, true);
+          } else {
+            getAllDoulist(config);
+          }
+        }
+      }, 300)
+    );
+  }
+
+  function handleSelectDoulist(config) {
+    var dialog = current_doulist_dialog;
+    dialog.node.delegate(":radio", "change", function () {
+      var $t = $(this);
+      // 排除「新建豆列、片单、书单」表单里的「所有人可见」「仅自己可见」
+      if ($t.parents(".dl_create_option").size() > 0) {
+        return;
+      }
+      var did = $t.val();
+      var url = DOULIST_COMMENT.replace("{doulist_id}", did);
+
+      // 日记同步的豆列不可选
+      if ($t.parent().attr("data-is-syncing-from-note")) {
+        return;
+      }
+
+      asyncRequest(url, {
+        /* local-dev */
+        // sid: '25839662', // movie
+        // sid: '33387422', // book
+        sid: config.id,
+        skind: config.cate,
+      })
+        .done(function (e) {
+          dialog.node.find("form #doulist_item_comment").val(e.comment);
+        })
+        .fail(function () {
+          // ignore
+        });
+    });
+  }
+
+  function handleNewDoulist(config) {
+    var dialog = current_doulist_dialog;
+    var dl_new_title = $(".dl_new_title");
+    var dl_title = $("#dl_title");
+    var dl_new_submit = $(".dl_new_submit");
+
+    dl_title.bind("keyup change", function () {
+      if ($.trim(dl_title.val()).length) {
+        dl_new_submit.removeAttr("disabled");
+      } else {
+        dl_new_submit.attr("disabled", true);
+      }
+    });
+
+    dl_title.bind("keydown", function (e) {
+      if (e.keyCode === 13) {
+        newListHandler(dialog, dl_new_title, config);
+        return false;
+      }
+    });
+
+    dl_new_submit.click(function () {
+      newListHandler(dialog, dl_new_title, config);
+    });
+  }
+
+  function renderSearched(res, category) {
+    var DL_TMPL = DOULIST_ITEM_TMPL;
+    DL_TMPL = DL_TMPL.replace(
+      /value="{{id}}" id="{{id}}"/g,
+      'value="{{id}}" id="search-{{id}}"'
+    ).replace(/for="{{id}}"/g, 'for="search-{{id}}"');
+    var RESULT = "";
+    $(res.doulists).each(function (i, dl) {
+      RESULT += DL_TMPL.replace(/{{[^{}]+}}/g, function (match) {
+        var matched = dl[match.replace(/[{}]/g, "")];
+        return (matched && encodeHTML(matched.toString())) || "";
+      });
+    });
+
+    $(".dl-item-exist .search-result-list").append(RESULT);
+
+    settleDoulistItemStatus(category, true);
+  }
+
+  function handleDoulistSearch(config) {
+    var dl_search = $(".dl_search");
+    var dl_exist = $(".dl-item-exist");
+    var dl_new_title = $(".dl_new_title");
+    var dl_new = $("#dl_new");
+    var clear_search_btn = $(".clear_search");
+
+    clear_search_btn.click(function () {
+      dl_search.val("").change();
+      clearSearch();
+    });
+
+    dl_search.focus(function () {
+      $(this).addClass("expand");
+      if (!dl_new_title.is(":hidden")) {
+        var form_error = $(".form-field-error");
+        var typeStr =
+          config.cate === "1001"
+            ? "书单"
+            : config.cate === "1002"
+            ? "片单"
+            : "豆列";
+        form_error.hide() &&
+          dl_new_title.hide() &&
+          dl_new.val("创建" + typeStr) &&
+          dl_exist.removeClass("fold");
+      }
+    });
+
+    dl_search.bind({
+      compositionstart: function () {
+        inputLock = true;
+      },
+      compositionend: function () {
+        inputLock = false;
+      },
+      input: function () {
+        setTimeout(() => {
+          if (inputLock) return;
+
+          var currenKeyword = $.trim(dl_search.val());
+          if (currenKeyword.length && searchKeyword !== currenKeyword) {
+            noMoreSearchResult = false;
+            searchDoulist(config);
+          } else if (currenKeyword.length === 0) {
+            clearSearch();
+          }
+        }, 100);
+      },
+    });
+  }
+
+  function clearSearch() {
+    var dl_search = $(".dl_search");
+    var dl_exist = $(".dl-item-exist");
+    var clear_search_btn = $(".clear_search");
+
+    $(".no-match-warning").hide();
+    dl_exist.find(".dl_exist_select").show();
+    dl_exist.find(".search-result-list").remove();
+    searchParams.start = 0;
+    searchDoulistTotal = null;
+    searchDoulistStatus = "";
+    // dl_exist.children().show();
+    clear_search_btn.hide();
+    dl_search.val("");
+    searchKeyword = "";
+    currenKeyword = "";
+    noMoreSearchResult = false;
+  }
+
+  function show_no_match() {
+    var dl_exist = $(".dl-item-exist");
+    $(".no-match-warning").length
+      ? $(".no-match-warning").show()
+      : dl_exist.before(
+          '<p class="no-match-warning">没有找到匹配结果，可以换个关键词试试</p>'
+        );
+  }
+
+  function searchDoulist(config, isScrollAppend) {
+    var promise = null;
+    var dl_search = $(".dl_search");
+    var dl_exist = $(".dl-item-exist");
+    var dl_new_title = $(".dl_new_title");
+    var dl_new = $("#dl_new");
+    var clear_search_btn = $(".clear_search");
+
+    var currenKeyword = $.trim(dl_search.val());
+
+    if (promise) {
+      promise.abort();
+    }
+    if (searchDoulistStatus === "pending" || noMoreSearchResult) {
+      return;
+    }
+
+    $(".no-match-warning").hide();
+    if (!isScrollAppend) {
+      dl_exist.find(".search-result-list").remove();
+    }
+
+    clear_search_btn.hide();
+    dl_search.addClass("loading");
+    searchKeyword = currenKeyword;
+    searchDoulistStatus = "pending";
+    const category =
+      config.cate === "1001" ? "book" : config.cate === "1002" ? "movie" : "";
+
+    promise = asyncRequest(DOULIST_SEARCH_SELF, {
+      limit: 5,
+      start: isScrollAppend ? searchParams.start : 0,
+      q: currenKeyword,
+      category: category,
+    });
+    promise
+      .done(function (res) {
+        dl_search.removeClass("loading");
+        clear_search_btn.show();
+        searchDoulistStatus = "success";
+        if (isScrollAppend) {
+          searchParams.start = searchParams.start + searchParams.limit;
+        }
+
+        if (res && res.doulists && res.doulists.length > 0) {
+          if ($(".dl-item-exist .search-result-list").size() === 0) {
+            $(".dl-item-exist .dl_exist_select")
+              .hide()
+              .after('<div class="search-result-list dl_exist_select"></div>');
+          }
+          renderSearched(res, category);
+        } else {
+          noMoreSearchResult = true;
+          if (searchParams.start === 0) {
+            dl_exist.find(".dl_exist_select").hide();
+            dl_exist.find(".search-result-list").remove();
+            show_no_match();
+          } else {
+            dl_exist
+              .find(".search-result-list")
+              .append(
+                '<div style="padding: 14px 0; text-align: center; color: #666;">没有更多了</div>'
+              );
+          }
+        }
+      })
+      .fail(function () {
+        noMoreSearchResult = true;
+        dl_exist.find(".dl_exist_select").hide();
+        dl_exist.find(".search-result-list").remove();
+        show_no_match();
+        dl_search.removeClass("loading");
+        clear_search_btn.show();
+        searchDoulistStatus = "error";
+      });
+  }
+
+  // 表单验证（创建豆列/片单/书单时）
+  function newListHandler(dialog, wrap, config) {
+    var DL_TMPL =
+      '<div class="just-created dl-item-wrap"><input type="radio" value="{{id}}" id="{{id}}" name="dl_id" checked="checked"><label for="{{id}}"><b data-is-private="{{is_private}}">{{name}}</b></label></div>';
+    var dl_title = $("#dl_title");
+    var dl_new = $("#dl_new");
+    var dl_exist = $(".dl_exist_select");
+    var validateRules = {
+      "#dl_title": function (e) {
+        if (e.val() === "") {
+          var typeStr =
+            config.cate === "1001"
+              ? "书单"
+              : config.cate === "1002"
+              ? "片单"
+              : "豆列";
+          validateForm.displayError(e, "请给你的" + typeStr + "起一个名称");
+          return false;
+        }
+        return true;
+      },
+    };
+    if (validateForm(wrap, validateRules)) {
+      var dl_new_submit = $(".dl_new_submit");
+      dl_new_submit.attr("disabled", true);
+      var title = $.trim($("#dl_title").val());
+      var digestType =
+        config.cate === "1001" ? "book" : config.cate === "1002" ? "movie" : "";
+      var prefixWord = getDigestTypeText(digestType) + "｜";
+
+      // 如果是书单、片单，标题自动加上前缀
+      if (digestType && !isStartsWithPrefixWord(title, digestType)) {
+        title = prefixWord + title;
+      }
+
+      var params = {
+        title: title,
+        is_private: $('input[name="is_private"]:checked').val(),
+      };
+
+      if (config.cate === "1001" || config.cate === "1002") {
+        params.category = config.cate === "1001" ? "book" : "movie";
+      }
+      asyncRequest(DOULIST_CREATE, params, "post")
+        .done(function (res) {
+          if (res.r) {
+            alert(res.err);
+            return;
+          }
+
+          res.doulist_id = res.id;
+          var DL_STR = DL_TMPL.replace(/{{[^{}]+}}/g, function (match) {
+            var matched = res[match.replace(/[{}]/g, "")];
+            return (matched && encodeHTML(matched.toString())) || "";
+          });
+          var new_dl = $(DL_STR);
+          new_dl.prependTo(dl_exist);
+          dl_exist.find(".empty-list").remove();
+
+          dl_exist.animate({ scrollTop: 0 }, 100);
+          dl_new.click();
+          dl_title.val("").change();
+        })
+        .fail(function () {
+          alert("网络问题，请稍后重试");
+          dl_new_submit.removeAttr("disabled");
+        });
+    } else {
+      dialog.update();
+    }
+    return wrap;
+  }
+
+  $.fn.doulistDialog = function (options) {
+    /* local-dev */
+    // options.cate = "1001"
+    // options.catename =  "图书"
+    // options.id = "33387422"
+
+    return new DoulistDialog($(this), options);
+  };
+})(jQuery);

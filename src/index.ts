@@ -1,5 +1,3 @@
-import statusScriptUrl from "./assets/status.js?url";
-
 function isValidUrl(str: string) {
   let url;
   try {
@@ -8,39 +6,6 @@ function isValidUrl(str: string) {
     return false;
   }
   return ["http:", "https:", "file:", "ftp:"].includes(url.protocol);
-}
-
-function replaceInlineScripts() {
-  let statusScriptIsFound = false;
-  const scriptElements: Iterable<HTMLScriptElement> =
-    document.querySelectorAll("script");
-  for (const scriptElement of scriptElements) {
-    const { innerHTML: scriptContent } = scriptElement;
-    const matchResult = /https.+?\/js\/sns\/lifestream\/status\.js/.exec(
-      scriptContent
-    );
-    if (matchResult === null) {
-      continue;
-    }
-    const { 0: match, index } = matchResult;
-    scriptElement.innerHTML =
-      scriptContent.slice(0, index) +
-      statusScriptUrl +
-      scriptContent.slice(index + match.length);
-    statusScriptIsFound = true;
-  }
-  return statusScriptIsFound;
-}
-
-function replaceExternalScript() {
-  const scriptElement = document.querySelector(
-    'script[src$="/js/sns/lifestream/status.js"]'
-  );
-  if (scriptElement === null) {
-    return false;
-  }
-  scriptElement.setAttribute("src", statusScriptUrl);
-  return true;
 }
 
 function addLocalShareButton() {
@@ -61,38 +26,6 @@ function addLocalShareButton() {
       );
     }
   );
-}
-
-function handleMutationObserved(
-  _: MutationRecord[],
-  __: MutationObserver
-): void {
-  // replace scripts
-  const foundExternal = replaceExternalScript();
-  const foundInline = replaceInlineScripts();
-  let statusScriptIsFound = foundExternal || foundInline;
-
-  // exit and retry in next mutation
-  if (!statusScriptIsFound) {
-    return;
-  }
-
-  // add reshare button
-  addLocalShareButton();
-
-  // exit and don't retry again
-  // observer.disconnect();
-}
-
-function registerScriptObserver() {
-  const scriptObserver = new MutationObserver(handleMutationObserved);
-  scriptObserver.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
-  document.addEventListener("DOMContentLoaded", () => {
-    scriptObserver.disconnect();
-  });
 }
 
 function patchXMLHttpRequest() {
@@ -154,7 +87,7 @@ function patchXMLHttpRequest() {
   };
 }
 
-function handleDOMContentLoaded() {
+function expandShortUrl() {
   [
     ...(document.querySelectorAll(
       'a[href^="https://douc.cc/"]'
@@ -170,6 +103,10 @@ function handleDOMContentLoaded() {
   });
 }
 
-// registerScriptObserver();
+function handleDOMContentLoaded() {
+  addLocalShareButton();
+  expandShortUrl();
+}
+
 patchXMLHttpRequest();
 document.addEventListener("DOMContentLoaded", handleDOMContentLoaded);
