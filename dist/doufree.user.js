@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         doufree
+// @name         DouFree
 // @namespace    https://github.com/Sec-ant/
 // @version      0.8.1
 // @author       豆泥@豆瓣
