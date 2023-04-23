@@ -1,4 +1,22 @@
 !(function (t) {
+  // hack: 添加「本级转发」按钮
+  [...document.querySelectorAll("div.status-real-wrapper")].forEach(
+    (realWrapper) => {
+      const reshareButton =
+        realWrapper.previousElementSibling?.querySelector(
+          'a.btn[data-action-type="reshare"]'
+        ) ?? null;
+
+      if (reshareButton === null) {
+        return;
+      }
+
+      reshareButton.insertAdjacentHTML(
+        "afterend",
+        ` \u00a0\u00a0<a class="btn" data-action-type="localReshare">本级转发</a>`
+      );
+    }
+  );
   function e(r) {
     if (n[r]) return n[r].exports;
     var i = (n[r] = { i: r, l: !1, exports: {} });
