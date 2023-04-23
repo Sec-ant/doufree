@@ -90,7 +90,7 @@ function replaceDouListUrls() {
         url = `https://www.douban.com/event/${dataObjectId}/`;
         break;
       case "1012":
-        url = `https://movie.douban.com/review/${dataObjectId}/`;
+        url = `https://www.douban.com/review/${dataObjectId}/`;
         break;
       case "1013":
         url = `https://www.douban.com/group/topic/${dataObjectId}/`;
@@ -113,18 +113,6 @@ function replaceDouListUrls() {
   });
 }
 
-function addDouListScript() {
-  const scriptElement = document.createElement("script");
-  scriptElement.src = "/js/sns/doulist/doulist_dialog.js";
-  document.body.append(scriptElement);
-}
-
-function handleDOMContentLoaded() {
-  expandShortUrl();
-  replaceDouListUrls();
-  addDouListScript();
-}
-
-// registerScriptObserver();
 patchXMLHttpRequest();
-document.addEventListener("DOMContentLoaded", handleDOMContentLoaded);
+expandShortUrl();
+replaceDouListUrls();

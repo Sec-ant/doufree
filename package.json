@@ -1,21 +1,36 @@
 {
   "name": "doufree",
-  "private": true,
+  "description": "Free you from DouBan restrictions",
+  "private": false,
   "version": "0.8.1",
   "type": "module",
+  "files": [
+    "./dist/**/*"
+  ],
+  "main": "./dist/doufree.user.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sec-ant/doufree"
+  },
+  "homepage": "https://github.com/Sec-ant/doufree",
+  "bugs": {
+    "url": "https://github.com/Sec-ant/doufree/issues"
+  },
+  "keywords": [
+    "douban",
+    "local-reshare"
+  ],
+  "author": "豆泥@豆瓣",
+  "license": "MIT",
   "devDependencies": {
-    "terser": "^5.17.1",
     "typescript": "^5.0.4",
     "vite": "^4.3.1",
     "vite-plugin-monkey": "^3.1.4",
     "vite-plugin-static-copy": "^0.14.0"
-  },
-  "dependencies": {
-    "acorn": "^8.8.2"
   }
 }

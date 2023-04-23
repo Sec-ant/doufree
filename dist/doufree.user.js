@@ -1,17 +1,19 @@
 // ==UserScript==
-// @name         DouFree
+// @name         doufree
 // @namespace    https://github.com/Sec-ant/
 // @version      0.8.1
 // @author       豆泥@豆瓣
 // @description  Free you from DouBan restrictions
+// @license      MIT
 // @icon         https://www.douban.com/favicon.ico
-// @homepage     https://github.com/Sec-ant/DouFree.js
+// @homepage     https://github.com/Sec-ant/doufree
+// @homepageURL  https://github.com/Sec-ant/doufree
+// @source       https://github.com/Sec-ant/doufree
+// @supportURL   https://github.com/Sec-ant/doufree/issues
 // @match        https://www.douban.com/*
 // @match        https://cdn.jsdelivr.net/*
-// @webRequest   {"selector":"*/js/sns/lifestream/status.js","action":{"redirect":"https://cdn.jsdelivr.net/gh/Sec-ant/DouFree.js@dev/dist/assets/0.8.1/status.min.js"}}
-// @webRequest   {"selector":"*/js/sns/doulist/doulist_dialog.js","action":{"redirect":"https://cdn.jsdelivr.net/gh/Sec-ant/DouFree.js@dev/dist/assets/0.8.1/doulist_dialog.min.js"}}
+// @webRequest   {"selector":"*/js/sns/lifestream/status.js","action":{"redirect":"https://cdn.jsdelivr.net/gh/Sec-ant/doufree/dist/assets/0.8.1/status.min.js"}}
 // @grant        none
-// @run-at       document-start
 // ==/UserScript==
 
 (function () {
@@ -102,7 +104,7 @@
           url = `https://www.douban.com/event/${dataObjectId}/`;
           break;
         case "1012":
-          url = `https://movie.douban.com/review/${dataObjectId}/`;
+          url = `https://www.douban.com/review/${dataObjectId}/`;
           break;
         case "1013":
           url = `https://www.douban.com/group/topic/${dataObjectId}/`;
@@ -124,17 +126,8 @@
       linkElement.target = "_black";
     });
   }
-  function addDouListScript() {
-    const scriptElement = document.createElement("script");
-    scriptElement.src = "/js/sns/doulist/doulist_dialog.js";
-    document.body.append(scriptElement);
-  }
-  function handleDOMContentLoaded() {
-    expandShortUrl();
-    replaceDouListUrls();
-    addDouListScript();
-  }
   patchXMLHttpRequest();
-  document.addEventListener("DOMContentLoaded", handleDOMContentLoaded);
+  expandShortUrl();
+  replaceDouListUrls();
 
 })();
