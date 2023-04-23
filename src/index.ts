@@ -8,86 +8,6 @@ function isValidUrl(str: string) {
   return ["http:", "https:", "file:", "ftp:"].includes(url.protocol);
 }
 
-function addLocalShareButton() {
-  [...document.querySelectorAll("div.status-real-wrapper")].forEach(
-    (realWrapper) => {
-      const reshareButton =
-        realWrapper.previousElementSibling?.querySelector(
-          'a.btn[data-action-type="reshare"]'
-        ) ?? null;
-
-      if (reshareButton === null) {
-        return;
-      }
-
-      reshareButton.insertAdjacentHTML(
-        "afterend",
-        ` \u00a0\u00a0<a class="btn" data-action-type="localReshare">本级转发</a>`
-      );
-    }
-  );
-}
-
-function foundInlineScripts() {
-  let found = false;
-  const scriptElements: Iterable<HTMLScriptElement> =
-    document.querySelectorAll("script");
-  for (const scriptElement of scriptElements) {
-    const { innerHTML: scriptContent } = scriptElement;
-    const matchResult = /https.+?\/js\/sns\/lifestream\/status\.js/.exec(
-      scriptContent
-    );
-    if (matchResult === null) {
-      continue;
-    }
-    found = true;
-    break;
-  }
-  return found;
-}
-
-function foundExternalScript() {
-  const scriptElement = document.querySelector(
-    'script[src$="/js/sns/lifestream/status.js"]'
-  );
-  if (scriptElement === null) {
-    return false;
-  }
-  return true;
-}
-
-function handleMutationObserved(
-  _: MutationRecord[],
-  observer: MutationObserver
-): void {
-  // replace scripts
-  const foundExternal = foundExternalScript();
-  const foundInline = foundInlineScripts();
-  let statusScriptIsFound = foundExternal || foundInline;
-
-  // exit and retry in next mutation
-  if (!statusScriptIsFound) {
-    return;
-  }
-
-  // add reshare button
-  addLocalShareButton();
-
-  // exit and don't retry again
-  observer.disconnect();
-}
-
-function registerScriptObserver() {
-  const scriptObserver = new MutationObserver(handleMutationObserved);
-  scriptObserver.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
-  document.addEventListener("DOMContentLoaded", () => {
-    scriptObserver.disconnect();
-  });
-}
-
 function patchXMLHttpRequest() {
   const OLD_XHR = window.XMLHttpRequest;
   window.XMLHttpRequest = class extends XMLHttpRequest {
@@ -112,25 +32,16 @@ function patchXMLHttpRequest() {
                 case /https:\/\/www\.douban\.com\/j\/status\/comments\?sid=\d+&resp_type=c_dict/.test(
                   responseURL
                 ):
-                  {
-                    const newXMLResponseText = xhr.responseText.replace(
-                      /"url":"([^"]+?)","expanded_url":"([^"]+?)"/g,
-                      '"url":"$2","expanded_url":"$2"'
-                    );
-                    return newXMLResponseText;
-                  }
-                  break;
+                  return xhr.responseText.replace(
+                    /"url":"([^"]+?)","expanded_url":"([^"]+?)"/g,
+                    '"url":"$2","expanded_url":"$2"'
+                  );
                 case /https:\/\/www\.douban\.com\/j\/(group\/check_content_clean|check_clean_content)/.test(
                   responseURL
                 ):
-                  {
-                    const newXMLResponseText = '{"r":0}';
-                    return newXMLResponseText;
-                  }
-                  break;
-                default: {
+                  return '{"r":0}';
+                default:
                   return xhr.responseText;
-                }
               }
             }
             default: {
@@ -149,9 +60,9 @@ function patchXMLHttpRequest() {
 
 function expandShortUrl() {
   [
-    ...(document.querySelectorAll(
+    ...document.querySelectorAll<HTMLAnchorElement>(
       'a[href^="https://douc.cc/"]'
-    ) as Iterable<HTMLAnchorElement>),
+    ),
   ].forEach((a) => {
     const { href, title, textContent } = a;
     if (title && isValidUrl(title)) {
@@ -163,10 +74,57 @@ function expandShortUrl() {
   });
 }
 
-function handleDOMContentLoaded() {
-  expandShortUrl();
+function replaceDouListUrls() {
+  [
+    ...document.querySelectorAll<HTMLDivElement>(
+      'div[data-target-type="doulist"]'
+    ),
+  ].forEach((div) => {
+    const dataObjectId = div.getAttribute("data-object-id");
+    if (dataObjectId === null) {
+      return;
+    }
+    let url: string;
+    switch (div.getAttribute("data-object-kind")) {
+      case "1011":
+        url = `https://www.douban.com/event/${dataObjectId}/`;
+        break;
+      case "1012":
+        url = `https://movie.douban.com/review/${dataObjectId}/`;
+        break;
+      case "1013":
+        url = `https://www.douban.com/group/topic/${dataObjectId}/`;
+        break;
+      case "1015":
+        url = `https://www.douban.com/note/${dataObjectId}/`;
+        break;
+      case "3055":
+        url = `https://www.douban.com/people/x/status/${dataObjectId}/`;
+        break;
+      default:
+        return;
+    }
+    const linkElement = div.querySelector<HTMLAnchorElement>("div.title > a");
+    if (!linkElement) {
+      return;
+    }
+    linkElement.href = url;
+    linkElement.target = "_black";
+  });
 }
 
-registerScriptObserver();
+function addDouListScript() {
+  const scriptElement = document.createElement("script");
+  scriptElement.src = "/js/sns/doulist/doulist_dialog.js";
+  document.body.append(scriptElement);
+}
+
+function handleDOMContentLoaded() {
+  expandShortUrl();
+  replaceDouListUrls();
+  addDouListScript();
+}
+
+// registerScriptObserver();
 patchXMLHttpRequest();
 document.addEventListener("DOMContentLoaded", handleDOMContentLoaded);

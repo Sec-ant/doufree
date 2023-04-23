@@ -106,22 +106,17 @@
                 switch (true) {
                   case /https:\/\/www\.douban\.com\/j\/status\/comments\?sid=\d+&resp_type=c_dict/.test(
                     responseURL
-                  ): {
-                    const newXMLResponseText = xhr.responseText.replace(
+                  ):
+                    return xhr.responseText.replace(
                       /"url":"([^"]+?)","expanded_url":"([^"]+?)"/g,
                       '"url":"$2","expanded_url":"$2"'
                     );
-                    return newXMLResponseText;
-                  }
                   case /https:\/\/www\.douban\.com\/j\/(group\/check_content_clean|check_clean_content)/.test(
                     responseURL
-                  ): {
-                    const newXMLResponseText = '{"r":0}';
-                    return newXMLResponseText;
-                  }
-                  default: {
+                  ):
+                    return '{"r":0}';
+                  default:
                     return xhr.responseText;
-                  }
                 }
               }
               default: {
@@ -152,8 +147,47 @@
       }
     });
   }
+  function replaceDouListUrls() {
+    [
+      ...document.querySelectorAll(
+        'div[data-target-type="doulist"]'
+      )
+    ].forEach((div) => {
+      const dataObjectId = div.getAttribute("data-object-id");
+      if (dataObjectId === null) {
+        return;
+      }
+      let url;
+      switch (div.getAttribute("data-object-kind")) {
+        case "1011":
+          url = `https://www.douban.com/event/${dataObjectId}/`;
+          break;
+        case "1012":
+          url = `https://movie.douban.com/review/${dataObjectId}/`;
+          break;
+        case "1013":
+          url = `https://www.douban.com/group/topic/${dataObjectId}/`;
+          break;
+        case "1015":
+          url = `https://www.douban.com/note/${dataObjectId}/`;
+          break;
+        case "3055":
+          url = `https://www.douban.com/people/x/status/${dataObjectId}/`;
+          break;
+        default:
+          return;
+      }
+      const linkElement = div.querySelector("div.title > a");
+      if (!linkElement) {
+        return;
+      }
+      linkElement.href = url;
+      linkElement.target = "_black";
+    });
+  }
   function handleDOMContentLoaded() {
     expandShortUrl();
+    replaceDouListUrls();
   }
   registerScriptObserver();
   patchXMLHttpRequest();

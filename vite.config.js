@@ -32,6 +32,12 @@ export default defineConfig({
               redirect: `https://cdn.jsdelivr.net/gh/Sec-ant/DouFree.js@dev/dist/assets/${version}/status.min.js`,
             },
           },
+          {
+            selector: "*/js/sns/doulist/doulist_dialog.js",
+            action: {
+              redirect: `https://cdn.jsdelivr.net/gh/Sec-ant/DouFree.js@dev/dist/assets/${version}/doulist_dialog.min.js`,
+            },
+          },
         ],
         "run-at": "document-start",
         grant: "none",
