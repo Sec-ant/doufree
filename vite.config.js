@@ -30,6 +30,7 @@ export default defineConfig({
           },
         ],
         grant: "none",
+        "run-at": "document-start",
       },
       clientAlias: "VPM",
     }),

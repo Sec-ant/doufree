@@ -115,8 +115,28 @@ function replaceDouListUrls() {
   });
 }
 
-if (window.location.host === "www.douban.com") {
-  patchXMLHttpRequest();
+function removeUnderscoreISearchParam() {
+  const replaceStateOriginal = window.history.replaceState;
+  window.history.replaceState = function (_, __, url) {
+    if (url) {
+      const urlObj = new URL(url);
+      const urlSearchParams = urlObj.searchParams;
+      urlSearchParams.delete("_i");
+      urlObj.hash = urlObj.hash.replace(/&_i=.*$/, "");
+      url = urlObj.toString();
+    }
+    return replaceStateOriginal.call(window.history, _, __, url);
+  };
+}
+
+function handleWindowLoaded() {
   expandShortUrl();
   replaceDouListUrls();
+  window.removeEventListener("load", handleWindowLoaded);
+}
+
+if (window.location.host === "www.douban.com") {
+  removeUnderscoreISearchParam();
+  patchXMLHttpRequest();
+  window.addEventListener("load", handleWindowLoaded);
 }
