@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DouFree
 // @namespace    https://github.com/Sec-ant/
-// @version      0.8.1
+// @version      0.9.0
 // @author       豆泥@豆瓣
 // @description  Free you from DouBan restrictions
 // @license      MIT
@@ -12,8 +12,9 @@
 // @supportURL   https://github.com/Sec-ant/doufree/issues
 // @match        https://www.douban.com/*
 // @match        https://cdn.jsdelivr.net/*
-// @webRequest   {"selector":"*/js/sns/lifestream/status.js","action":{"redirect":"https://cdn.jsdelivr.net/gh/Sec-ant/doufree/dist/assets/0.8.1/status.min.js"}}
+// @webRequest   {"selector":"*/js/sns/lifestream/status.js","action":{"redirect":"https://cdn.jsdelivr.net/gh/Sec-ant/doufree/dist/assets/0.9.0/status.min.js"}}
 // @grant        none
+// @run-at       document-start
 // ==/UserScript==
 
 (function () {
@@ -118,7 +119,9 @@
         default:
           return;
       }
-      const linkElement = div.querySelector("div.title > a");
+      const linkElement = div.querySelector(
+        'div.title > a, p.text > a[href^="https://www.douban.com/doulist"]'
+      );
       if (!linkElement) {
         return;
       }
@@ -126,8 +129,28 @@
       linkElement.target = "_black";
     });
   }
-  patchXMLHttpRequest();
-  expandShortUrl();
-  replaceDouListUrls();
+  function removeUnderscoreISearchParam() {
+    const replaceStateOriginal = window.history.replaceState;
+    window.history.replaceState = function(_, __, url) {
+      if (url) {
+        const urlObj = new URL(url);
+        const urlSearchParams = urlObj.searchParams;
+        urlSearchParams.delete("_i");
+        urlObj.hash = urlObj.hash.replace(/(&|\?)_i=.*$/, "");
+        url = urlObj.toString();
+      }
+      return replaceStateOriginal.call(window.history, _, __, url);
+    };
+  }
+  function handleWindowLoaded() {
+    expandShortUrl();
+    replaceDouListUrls();
+    window.removeEventListener("load", handleWindowLoaded);
+  }
+  if (window.location.host === "www.douban.com") {
+    removeUnderscoreISearchParam();
+    patchXMLHttpRequest();
+    window.addEventListener("load", handleWindowLoaded);
+  }
 
 })();

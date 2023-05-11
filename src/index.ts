@@ -122,7 +122,7 @@ function removeUnderscoreISearchParam() {
       const urlObj = new URL(url);
       const urlSearchParams = urlObj.searchParams;
       urlSearchParams.delete("_i");
-      urlObj.hash = urlObj.hash.replace(/&_i=.*$/, "");
+      urlObj.hash = urlObj.hash.replace(/(&|\?)_i=.*$/, "");
       url = urlObj.toString();
     }
     return replaceStateOriginal.call(window.history, _, __, url);
