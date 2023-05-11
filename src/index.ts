@@ -113,6 +113,8 @@ function replaceDouListUrls() {
   });
 }
 
-patchXMLHttpRequest();
-expandShortUrl();
-replaceDouListUrls();
+if (window.location.host === "www.douban.com") {
+  patchXMLHttpRequest();
+  expandShortUrl();
+  replaceDouListUrls();
+}
