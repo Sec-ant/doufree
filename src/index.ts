@@ -104,7 +104,9 @@ function replaceDouListUrls() {
       default:
         return;
     }
-    const linkElement = div.querySelector<HTMLAnchorElement>("div.title > a");
+    const linkElement = div.querySelector<HTMLAnchorElement>(
+      'div.title > a, p.text > a[href^="https://www.douban.com/doulist"]'
+    );
     if (!linkElement) {
       return;
     }
