@@ -3,9 +3,9 @@
   [...document.querySelectorAll("div.status-real-wrapper")].forEach(
     (realWrapper) => {
       const reshareButton =
-        realWrapper
-          .closest("div")
-          ?.querySelector('div a.btn[data-action-type="reshare"]') ?? null;
+        realWrapper.parentElement?.querySelector(
+          'div:not(.status-real-wrapper) a.btn[data-action-type="reshare"]'
+        ) ?? null;
 
       if (reshareButton === null) {
         return;
