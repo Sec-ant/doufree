@@ -3,9 +3,9 @@
   [...document.querySelectorAll("div.status-real-wrapper")].forEach(
     (realWrapper) => {
       const reshareButton =
-        realWrapper.previousElementSibling?.querySelector(
-          'a.btn[data-action-type="reshare"]'
-        ) ?? null;
+        realWrapper
+          .closest("div")
+          ?.querySelector('div a.btn[data-action-type="reshare"]') ?? null;
 
       if (reshareButton === null) {
         return;
@@ -1780,7 +1780,7 @@
     };
   },
   function (t, e) {
-    t.exports = "\t\n\v\f\r   ᠎             　\u2028\u2029\ufeff";
+    t.exports = "\t\n\v\f\r   ᠎             　\u2028\u2029\ufeff";
   },
   function (t, e, n) {
     "use strict";
@@ -3779,7 +3779,7 @@
     );
   },
   function (t, e) {
-    t.exports = "\t\n\v\f\r   ᠎             　\u2028\u2029\ufeff";
+    t.exports = "\t\n\v\f\r   ᠎             　\u2028\u2029\ufeff";
   },
   function (t, e, n) {
     "use strict";
@@ -7821,7 +7821,7 @@
         content: "",
         title: "转发到豆瓣",
         api: "/j/status/reshare",
-        limit: 140,
+        limit: 350,
         placeholder: "说说看法...",
       },
       Ut = (function () {
