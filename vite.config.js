@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import monkey from "vite-plugin-monkey";
-import { name, version, author, description, homepage } from "./package.json";
+import { version } from "./package.json";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default defineConfig({
@@ -23,9 +23,9 @@ export default defineConfig({
         match: ["https://www.douban.com/*", "https://cdn.jsdelivr.net/*"],
         webRequest: [
           {
-            selector: "*/js/sns/lifestream/status.js",
+            selector: "*/dist/sns/status/index.js",
             action: {
-              redirect: `https://cdn.jsdelivr.net/gh/Sec-ant/doufree/dist/assets/${version}/status.min.js`,
+              redirect: `https://cdn.jsdelivr.net/gh/Sec-ant/doufree/dist/assets/${version}/index.min.js`,
             },
           },
         ],

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DouFree
 // @namespace    https://github.com/Sec-ant/
-// @version      0.9.2
+// @version      0.9.3
 // @author       豆泥@豆瓣
 // @description  Free you from DouBan restrictions
 // @license      MIT
@@ -12,7 +12,7 @@
 // @supportURL   https://github.com/Sec-ant/doufree/issues
 // @match        https://www.douban.com/*
 // @match        https://cdn.jsdelivr.net/*
-// @webRequest   {"selector":"*/js/sns/lifestream/status.js","action":{"redirect":"https://cdn.jsdelivr.net/gh/Sec-ant/doufree/dist/assets/0.9.2/status.min.js"}}
+// @webRequest   {"selector":"*/dist/sns/status/index.js","action":{"redirect":"https://cdn.jsdelivr.net/gh/Sec-ant/doufree/dist/assets/0.9.3/index.min.js"}}
 // @grant        none
 // @run-at       document-start
 // ==/UserScript==
