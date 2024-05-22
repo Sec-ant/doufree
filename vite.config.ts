@@ -33,7 +33,7 @@ export default defineConfig({
 });
 
 function getWebRequest() {
-  let scriptUrl;
+  let scriptUrl: string;
   try {
     scriptUrl =
       process.env.SCRIPT_URL ??
@@ -48,7 +48,10 @@ function getWebRequest() {
   }
   const scriptUrlObject = new URL(scriptUrl);
   const scriptPathName = scriptUrlObject.pathname;
-  const selector = `*${scriptPathName}`;
+  const selector = `*${scriptPathName.replace(
+    /index\..+?\.js$/,
+    "index.*.js",
+  )}`;
   const redirect = `https://fastly.jsdelivr.net/npm/doufree@${version}/dist/assets/${basename(
     scriptPathName,
     ".js",
