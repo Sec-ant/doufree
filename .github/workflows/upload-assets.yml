@@ -1,0 +1,27 @@
+name: Upload Assets
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  upload-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Download Script
+        run: curl -LOs "https://fastly.jsdelivr.net/npm/doufree@$(echo $GITHUB_REF_NAME | cut -c 2-)/dist/doufree.user.js"
+
+      - name: Upload Script
+        run: gh release upload $GITHUB_REF_NAME ./doufree.user.js --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
