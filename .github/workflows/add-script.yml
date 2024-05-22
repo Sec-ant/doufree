@@ -1,0 +1,49 @@
+name: Add Script
+
+on:
+  workflow_dispatch:
+    inputs:
+      scriptUrl:
+        description: Add script
+        required: true
+        type: string
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  patch-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Add Script
+        run: ./scripts/add_url.sh ${{ inputs.scriptUrl }}
+
+      - name: Add Changeset
+        run: |
+          CHANGESET_FILE="./.changeset/$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32).md"
+          echo ---                              > $CHANGESET_FILE
+          echo '"doufree": minor'              >> $CHANGESET_FILE
+          echo ---                             >> $CHANGESET_FILE
+          echo                                 >> $CHANGESET_FILE
+          echo 'Patch ${{ inputs.scriptUrl }}' >> $CHANGESET_FILE
+
+      - name: Create Pull Request
+        id: create-pull-request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.CHANGESET_TOKEN }}
+          branch: "chore/add-script"
+          title: "chore: add script"
+          commit-message: "chore: add script"
+          body: "Add new script: ${{ inputs.scriptUrl }}"
+
+      - name: Auto merge
+        if: ${{ steps.create-pull-request.outputs.pull-request-operation != 'closed' && steps.create-pull-request.outputs.pull-request-number != '' }}
+        run: gh pr merge --squash --auto --delete-branch ${{ steps.create-pull-request.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

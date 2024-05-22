@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  packages: write
+  id-token: write
+
+env:
+  NPM_CONFIG_PROVENANCE: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Get Next Package Version
+        id: package-version
+        run: echo "version=$(npx changeset status --output=release.json && jq -r '.releases[0].newVersion // '$(npm pkg get version)'' release.json && rm release.json)" >> $GITHUB_OUTPUT
+
+      - name: Create Release Pull Request or Publish to NPM
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: npm run bump
+          publish: npx changeset publish
+          commit: "chore(release): v${{ steps.package-version.outputs.version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.CHANGESET_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

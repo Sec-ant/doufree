@@ -1,31 +1,26 @@
+import { readFileSync } from "node:fs";
+import { basename } from "node:path";
 import { defineConfig } from "vite";
 import monkey from "vite-plugin-monkey";
 import { version } from "./package.json";
-import { viteStaticCopy } from "vite-plugin-static-copy";
+
+const { selector, redirect } = getWebRequest();
 
 export default defineConfig({
   publicDir: false,
   plugins: [
-    viteStaticCopy({
-      targets: [
-        {
-          src: "public/*",
-          dest: `assets/${version}`,
-        },
-      ],
-    }),
     monkey({
       entry: "src/index.ts",
       userscript: {
         name: "DouFree",
         namespace: "https://github.com/Sec-ant/",
         icon: "https://www.douban.com/favicon.ico",
-        match: ["https://www.douban.com/*", "https://cdn.jsdelivr.net/*"],
+        match: ["https://www.douban.com/*", "https://fastly.jsdelivr.net/*"],
         webRequest: [
           {
-            selector: "*/dist/sns/status/index.js",
+            selector,
             action: {
-              redirect: `https://cdn.jsdelivr.net/gh/Sec-ant/doufree/dist/assets/${version}/index.min.js`,
+              redirect,
             },
           },
         ],
@@ -36,3 +31,30 @@ export default defineConfig({
     }),
   ],
 });
+
+function getWebRequest() {
+  let scriptUrl;
+  try {
+    scriptUrl =
+      process.env.SCRIPT_URL ??
+      JSON.parse(
+        readFileSync("./script-url.meta.json", { encoding: "utf8" }),
+      )[0];
+    if (!scriptUrl) {
+      throw undefined;
+    }
+  } catch {
+    throw new Error("Script url is not found.");
+  }
+  const scriptUrlObject = new URL(scriptUrl);
+  const scriptPathName = scriptUrlObject.pathname;
+  const selector = `*${scriptPathName}`;
+  const redirect = `https://fastly.jsdelivr.net/npm/doufree@${version}/dist/assets/${basename(
+    scriptPathName,
+    ".js",
+  )}.patch.js`;
+  return {
+    selector,
+    redirect,
+  };
+}

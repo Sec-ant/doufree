@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "ignoreUnknown": true,
+    "ignore": ["package.json", "script-url.meta.json"]
+  },
+  "formatter": {
+    "indentStyle": "space"
+  },
+  "linter": {
+    "rules": {
+      "recommended": true,
+      "style": {
+        "noParameterAssign": "off"
+      },
+      "correctness": {
+        "noConstructorReturn": "off"
+      }
+    }
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  }
+}
