@@ -1,5 +1,11 @@
 # doufree
 
+## 0.10.1
+
+### Patch Changes
+
+- e2dc0c5: Relax selector pattern.
+
 ## 0.10.0
 
 ### Minor Changes
