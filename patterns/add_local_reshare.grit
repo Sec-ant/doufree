@@ -1,0 +1,59 @@
+engine marzano(0.1)
+language js(js_do_not_use)
+
+pattern element($id, $selector) {
+    `var $id = $_.find($selector)[0];`
+}
+
+pattern reshare_logic($id, $button, $status_id, $action_fun) {
+    `$id &&
+        (this.$button = new $_({
+            targetDOM: $id,
+            statusId: $status_id,
+            $...,
+            reshareContent: this.$action_fun(),
+            $...
+        }));`
+}
+
+pattern action($action_key, $node) {
+    `{
+        key: $action_key,
+        value: function() {
+            var $_ = $node;
+            return $_;
+        }
+    }`
+}
+
+sequential {
+    // add local reshare logic
+    bubble file($body) where $body <: contains element($id, $selector) as $local_reshare_element where {
+        $reshare_text = text($local_reshare_element),
+        $local_reshare_logic = after $local_reshare_element,
+        $reshare_text += text($local_reshare_logic),
+        $selector <: `'[data-action-type="reshare"]'` => `'[data-action-type="localReshare"]'`,
+        $local_reshare_logic <: reshare_logic($id, $button, $status_id, $action_fun) where {
+            $id => `lr`,
+            $button => `localReshareButton`,
+            $status_id <: maybe `$_ ? $_ : $this_id` => $this_id,
+            $action_fun => `_getLocalReshareContent`
+        }
+    } => `$reshare_text$local_reshare_element`,
+    // add local reshare action
+    bubble file($body) where $body <: contains action($action_key, $node) as $local_reshare_action where {
+        $reshare_action_text = text($local_reshare_action),
+        $action_key <: `"_getReshareContent"` => `"_getLocalReshareContent"`,
+        $node <: maybe `$_ ? $_ : $inner_node` => $inner_node,
+    } => `$reshare_action_text,$local_reshare_action`,
+    // prepend
+    bubble file($body) where $body <: contains `!$function($_);` where {
+        or {
+            $function <: contains `function($_){ $function_body }`,
+            $function <: contains `(function($_){ $function_body })`
+        },
+        $function_body_text = text($function_body),
+        $preprend_text = "for(const w of[...document.querySelectorAll(\"div.status-real-wrapper\")]){const b=w.parentElement?.querySelector('div:not(.status-real-wrapper) a.btn[data-action-type=\"reshare\"]')??null;if(null===b)break;b.insertAdjacentHTML(\"afterend\",'   <a class=\"btn\" data-action-type=\"localReshare\">本级转发</a>')}",
+        $function_body => `$preprend_text$function_body_text`
+    }
+}

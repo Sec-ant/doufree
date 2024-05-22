@@ -1,5 +1,5 @@
 function isValidUrl(str: string) {
-  let url;
+  let url: URL;
   try {
     url = new URL(str);
   } catch {
@@ -17,7 +17,7 @@ function patchXMLHttpRequest() {
         set<T extends keyof XMLHttpRequest>(
           xhr: XMLHttpRequest,
           key: T,
-          value: XMLHttpRequest[T]
+          value: XMLHttpRequest[T],
         ) {
           if (key in xhr) {
             xhr[key] = value;
@@ -30,14 +30,14 @@ function patchXMLHttpRequest() {
               const { responseURL } = xhr;
               switch (true) {
                 case /https:\/\/www\.douban\.com\/j\/status\/comments\?sid=\d+&resp_type=c_dict/.test(
-                  responseURL
+                  responseURL,
                 ):
                   return xhr.responseText.replace(
                     /"url":"([^"]+?)","expanded_url":"([^"]+?)"/g,
-                    '"url":"$2","expanded_url":"$2"'
+                    '"url":"$2","expanded_url":"$2"',
                   );
                 case /https:\/\/www\.douban\.com\/j\/(group\/check_content_clean|check_clean_content)/.test(
-                  responseURL
+                  responseURL,
                 ):
                   return '{"r":0}';
                 default:
@@ -59,11 +59,11 @@ function patchXMLHttpRequest() {
 }
 
 function expandShortUrl() {
-  [
+  for (const a of [
     ...document.querySelectorAll<HTMLAnchorElement>(
-      'a[href^="https://douc.cc/"]'
+      'a[href^="https://douc.cc/"]',
     ),
-  ].forEach((a) => {
+  ]) {
     const { href, title, textContent } = a;
     if (title && isValidUrl(title)) {
       a.href = title;
@@ -71,15 +71,15 @@ function expandShortUrl() {
         a.textContent = title;
       }
     }
-  });
+  }
 }
 
 function replaceDouListUrls() {
-  [
+  for (const div of [
     ...document.querySelectorAll<HTMLDivElement>(
-      'div[data-target-type="doulist"]'
+      'div[data-target-type="doulist"]',
     ),
-  ].forEach((div) => {
+  ]) {
     const dataObjectId = div.getAttribute("data-object-id");
     if (dataObjectId === null) {
       return;
@@ -105,19 +105,19 @@ function replaceDouListUrls() {
         return;
     }
     const linkElement = div.querySelector<HTMLAnchorElement>(
-      'div.title > a, p.text > a[href^="https://www.douban.com/doulist"]'
+      'div.title > a, p.text > a[href^="https://www.douban.com/doulist"]',
     );
     if (!linkElement) {
       return;
     }
     linkElement.href = url;
     linkElement.target = "_black";
-  });
+  }
 }
 
 function removeUnderscoreISearchParam() {
   const replaceStateOriginal = window.history.replaceState;
-  window.history.replaceState = function (_, __, url) {
+  window.history.replaceState = (_, __, url) => {
     if (url) {
       const urlObj = new URL(url);
       const urlSearchParams = urlObj.searchParams;
