@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       scriptUrl:
-        description: Add script
+        description: Script URL
         required: true
         type: string
 
@@ -14,7 +14,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  patch-script:
+  add-script:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -46,4 +46,4 @@ jobs:
         if: ${{ steps.create-pull-request.outputs.pull-request-operation != 'closed' && steps.create-pull-request.outputs.pull-request-number != '' }}
         run: gh pr merge --squash --auto --delete-branch ${{ steps.create-pull-request.outputs.pull-request-number }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.CHANGESET_TOKEN }}
