@@ -55,6 +55,6 @@
     "simple-git-hooks": "^2.11.1",
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
-    "vite-plugin-monkey": "^3.5.2"
+    "vite-plugin-monkey": "^4.0.0"
   }
 }
