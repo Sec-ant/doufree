@@ -2,7 +2,7 @@
   "name": "doufree",
   "description": "Free you from DouBan restrictions",
   "private": false,
-  "version": "0.10.1",
+  "version": "0.11.0",
   "type": "module",
   "files": [
     "./dist"
