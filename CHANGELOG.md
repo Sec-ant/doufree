@@ -1,5 +1,11 @@
 # doufree
 
+## 0.11.0
+
+### Minor Changes
+
+- 245cad1: Patch https://img1.doubanio.com/cuphead/sns-static/status/index.ec180.js
+
 ## 0.10.1
 
 ### Patch Changes
