@@ -1,5 +1,11 @@
 # doufree
 
+## 0.13.0
+
+### Minor Changes
+
+- 73413fd: Patch https://img1.doubanio.com/cuphead/sns-static/status/index.ec180.js
+
 ## 0.12.0
 
 ### Minor Changes
