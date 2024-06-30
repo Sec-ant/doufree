@@ -1,5 +1,11 @@
 # doufree
 
+## 0.14.0
+
+### Minor Changes
+
+- 3d02535: Patch https://img2.doubanio.com/cuphead/sns-static/status/index.3291e.js
+
 ## 0.13.0
 
 ### Minor Changes
