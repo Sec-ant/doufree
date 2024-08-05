@@ -48,7 +48,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.7.3",
     "@changesets/cli": "^2.27.5",
-    "@getgrit/launcher": "^0.0.26",
+    "@getgrit/launcher": "^0.0.29",
     "lint-staged": "^15.2.5",
     "prettier": "^3.3.0",
     "pretty-quick": "^4.0.0",
