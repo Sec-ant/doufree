@@ -170,7 +170,7 @@ function getLocalReshareContent(button: Element) {
       node.remove();
     }
   }
-  return `<div class='status-real-wrapper'>                              ${clone.innerHTML}                            </div>`;
+  return `<div class='status-real-wrapper'>${clone.innerHTML}</div>`;
 }
 
 function patchNativeModalLocalReshare() {
