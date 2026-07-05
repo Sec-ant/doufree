@@ -2,7 +2,7 @@
   "name": "doufree",
   "description": "Free you from DouBan restrictions",
   "private": false,
-  "version": "0.14.0",
+  "version": "0.14.2",
   "type": "module",
   "files": [
     "./dist"
@@ -39,7 +39,7 @@
     "check:biome": "biome check --apply .",
     "check": "npm run format:prettier && npm run check:biome",
     "prebuild": "npm run check && npm run type-check",
-    "build": "vite build && ./scripts/patch_script.sh",
+    "build": "vite build",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
     "bump-biome:latest": "npm i -DE @biomejs/biome@latest",

@@ -10,6 +10,44 @@ DouFree 是一个运行在桌面浏览器上的[用户脚本（Userscript）](ht
 
 3. 如果脚本被 Greasy Fork 撤下，你也可以在 jsDelivr CDN 上找到该脚本：https://fastly.jsdelivr.net/npm/doufree/dist/doufree.user.js
 
+## 从源码构建
+
+如果你是从本仓库源码构建本地版本，需要先安装 [Node.js](https://nodejs.org/)（会自带 `npm`），然后在项目根目录运行：
+
+```bash
+npm install
+npm run build
+```
+
+构建产物会生成在 `dist/doufree.user.js`。打开 Tampermonkey 的管理面板，新增或编辑 DouFree 脚本，把该文件内容安装进去即可。
+
+Chrome 138+ 和 Tampermonkey 5.3+ 用户需要在 Chrome 扩展详情页开启「允许运行用户脚本」。如果修改了 userscript 元信息（例如 `@match`、`@grant`、`@run-at`）后页面上没有生效，请重新加载 Tampermonkey 扩展并刷新豆瓣页面。
+
+## 1.4.2 新版改动
+
+由于 Tampermonkey 5.3.0+ 在新版 Chrome 上不再支持原来的 `webRequest` 用户脚本能力，同时新版 Chrome 对扩展拦截网络请求的能力也做了限制，DouFree 不再通过拦截和替换豆瓣前端脚本来恢复本级转发功能。
+
+当前实现改为 DOM 层方案：脚本会在豆瓣原生「转发」按钮旁边新增「本级转发」按钮；点击「本级转发」时，先复用豆瓣原生「转发」按钮打开弹窗，再把弹窗中的引用内容替换成本级广播内容。这样可以继续使用豆瓣自己的弹窗、接口参数和提交逻辑。
+
+优势：
+
+- 不再依赖 Tampermonkey 的 `webRequest`，兼容新版 Chrome 和 Tampermonkey。
+- 不需要下载、改写或内嵌豆瓣前端脚本，构建流程更简单。
+- 复用豆瓣原生转发逻辑，不需要脚本自行拼接转发 API 参数。
+- userscript 权限更少，目前使用 `@grant none`。
+
+劣势：
+
+- 依赖豆瓣页面上的 DOM 结构和转发弹窗结构；如果豆瓣改版，可能需要调整选择器。
+- 本级转发按钮需要等页面中的原生「转发」按钮渲染出来后再插入，动态加载内容可能会有短暂延迟。
+- 该方案只处理网页端已渲染出的广播内容，不等同于恢复豆瓣官方完整客户端能力。
+
+潜在风险：
+
+- 脚本会克隆当前页面中已经渲染的广播 DOM，并放入转发弹窗。如果豆瓣页面本身出现未过滤的恶意 HTML，克隆内容也可能一并带入弹窗。
+- 脚本会触发同一条广播旁边的原生「转发」按钮，但不会自动提交转发；最终提交仍由用户在豆瓣原生弹窗中确认。
+- 如果浏览器或 Tampermonkey 没有加载最新的 userscript 元信息（例如 `@match`、`@grant`），可能出现脚本在某些页面不运行的情况。此时需要重新加载 Tampermonkey 扩展并刷新豆瓣页面。
+
 ## 功能
 
 ### 恢复豆瓣广播多级转发功能
